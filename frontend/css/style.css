@@ -447,9 +447,32 @@ body {
     font-weight: 500;
 }
 
-/* ======================================================
-   CONNECTION STATUS DOT
-   ====================================================== */
+.btn-nav-link {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+}
+.btn-nav-link:hover { color: var(--accent); border-color: rgba(0,255,136,0.3); }
+
+.btn-logout {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--muted);
+    padding: 5px 9px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-logout:hover { color: var(--danger); border-color: rgba(255,71,87,0.4); background: rgba(255,71,87,0.06); }
 .conn-dot {
     width: 8px; height: 8px;
     border-radius: 50%;
@@ -467,6 +490,30 @@ body {
     box-shadow: 0 0 6px var(--danger);
 }
 @keyframes dot-pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+/* ======================================================
+   ESP32 OFFLINE BANNER + CONTROLS FADE
+   ====================================================== */
+.esp32-offline-banner {
+    background: rgba(255,165,0,0.08);
+    border: 1px solid rgba(255,165,0,0.35);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 0.8rem;
+    color: var(--warning);
+    display: flex;
+    align-items: center;
+    animation: fade-in 0.3s ease;
+}
+
+#esp32-controls {
+    transition: opacity 0.4s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+@keyframes fade-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 
 /* ======================================================
    FOOTER

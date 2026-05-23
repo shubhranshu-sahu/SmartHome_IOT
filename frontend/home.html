@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Smart Home IoT — Real-time radar, LED control, flame detection, and live analytics powered by ESP32 and FastAPI." />
+  <title>Smart Home IoT — Take Control</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet" />
+
+  <!-- GSAP + ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <link rel="stylesheet" href="css/home.css" />
+</head>
+<body>
+
+<!-- Particle background canvas -->
+<canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+<!-- =====================================================================
+     NAVBAR
+     ===================================================================== -->
+<nav class="home-nav" id="home-nav">
+  <div class="nav-inner container-fluid">
+    <a href="home.html" class="nav-logo">
+      <i class="bi bi-house-gear-fill"></i>
+      <span>Smart<strong>Home</strong> <sup>IoT</sup></span>
+    </a>
+
+    <div class="nav-links d-none d-md-flex" id="nav-links">
+      <a href="#features"   class="nav-lnk">Features</a>
+      <a href="#components" class="nav-lnk">Hardware</a>
+      <a href="#tech"       class="nav-lnk">Tech Stack</a>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+      <!-- Shown when already logged in -->
+      <a href="index.html" class="btn-go-dash d-none" id="btn-go-dash">
+        <i class="bi bi-grid-fill me-1"></i>Dashboard
+      </a>
+      <!-- Shown when not logged in -->
+      <button class="btn-login-nav" id="btn-open-login"
+              data-bs-toggle="modal" data-bs-target="#login-modal">
+        <i class="bi bi-lock-fill me-1"></i>Login
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- =====================================================================
+     HERO
+     ===================================================================== -->
+<section id="hero" class="hero-section">
+  <div class="container-fluid hero-inner">
+    <div class="row align-items-center h-100">
+
+      <!-- Left: Text -->
+      <div class="col-12 col-lg-6 hero-text-col">
+        <div class="hero-badge" id="hero-badge">
+          <span class="hb-dot"></span>Live IoT System
+        </div>
+
+        <h1 class="hero-title">
+          <span class="ht-line" id="ht-1">Smart Home</span>
+          <span class="ht-line ht-grad" id="ht-2">Control Centre</span>
+        </h1>
+
+        <p class="hero-sub" id="hero-sub">
+          Real-time radar scanning, 4-room LED control, flame &amp; gate detection,
+          and live analytics — powered by <strong>ESP32</strong> and delivered
+          to any browser via <strong>WebSocket</strong>.
+        </p>
+
+        <div class="hero-actions" id="hero-actions">
+          <button class="btn-hero-primary" id="btn-hero-login"
+                  data-bs-toggle="modal" data-bs-target="#login-modal">
+            <i class="bi bi-grid-fill me-2"></i>Enter Dashboard
+          </button>
+          <a href="#features" class="btn-hero-ghost">
+            Explore <i class="bi bi-arrow-down ms-1"></i>
+          </a>
+        </div>
+
+        <div class="hero-chips" id="hero-chips">
+          <span class="chip"><i class="bi bi-broadcast"></i> HC-SR04 Radar</span>
+          <span class="chip"><i class="bi bi-lightning-charge-fill"></i> FastAPI</span>
+          <span class="chip"><i class="bi bi-database-fill"></i> MongoDB Atlas</span>
+          <span class="chip"><i class="bi bi-arrow-repeat"></i> WebSocket</span>
+        </div>
+      </div>
+
+      <!-- Right: Live Radar preview -->
+      <div class="col-12 col-lg-6 hero-radar-col" id="hero-radar-col">
+        <div class="hero-radar-wrap">
+          <canvas id="hero-radar" aria-label="Animated radar preview"></canvas>
+          <div class="radar-hud">
+            <span class="hud-tag">RADAR PREVIEW</span>
+            <span class="hud-dot-live"></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="scroll-hint" id="scroll-hint">
+    <span>scroll to explore</span>
+    <div class="scroll-arrow-anim"></div>
+  </div>
+</section>
+
+<!-- =====================================================================
+     STATS BAR
+     ===================================================================== -->
+<section id="stats-bar" class="stats-bar-section">
+  <div class="container-fluid">
+    <div class="stats-bar-row">
+      <div class="sb-item">
+        <div class="sb-num" data-target="7">0</div>
+        <div class="sb-label">Sensors</div>
+      </div>
+      <div class="sb-sep"></div>
+      <div class="sb-item">
+        <div class="sb-num" data-target="4">0</div>
+        <div class="sb-label">LED Rooms</div>
+      </div>
+      <div class="sb-sep"></div>
+      <div class="sb-item">
+        <div class="sb-num" data-target="360">0</div>
+        <div class="sb-label">° Sweep</div>
+      </div>
+      <div class="sb-sep"></div>
+      <div class="sb-item">
+        <div class="sb-num" data-target="400">0</div>
+        <div class="sb-label">ms Refresh</div>
+      </div>
+      <div class="sb-sep"></div>
+      <div class="sb-item">
+        <div class="sb-num" data-target="500">0</div>
+        <div class="sb-label">ms Cmd Latency</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================================
+     FEATURES
+     ===================================================================== -->
+<section id="features" class="home-section">
+  <div class="container">
+    <div class="section-hdr text-center">
+      <span class="sec-tag">Capabilities</span>
+      <h2 class="sec-title">What it can do</h2>
+      <p class="sec-sub">A full-stack IoT system running on ESP32, delivering real-time sensor data to any browser</p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-12 col-sm-6 col-xl-3 feat-col">
+        <div class="feat-card" style="--fc-color:#00ff88">
+          <div class="fc-glow"></div>
+          <div class="fc-icon"><i class="bi bi-broadcast"></i></div>
+          <h3 class="fc-title">Radar Scanning</h3>
+          <p class="fc-desc">HC-SR04 on a servo sweeps 0–180°. Objects plotted live on a canvas radar with EMA smoothing and ping-pong extrapolation between updates.</p>
+          <div class="fc-tags">
+            <span>HC-SR04</span><span>Servo</span><span>Canvas</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-xl-3 feat-col">
+        <div class="feat-card" style="--fc-color:#ffa502">
+          <div class="fc-glow"></div>
+          <div class="fc-icon"><i class="bi bi-lightbulb-fill"></i></div>
+          <h3 class="fc-title">LED Room Control</h3>
+          <p class="fc-desc">4 rooms independently, or all at once. Optimistic WebSocket UI gives &lt;50ms visual response. ESP32 executes within 300ms via threaded command poll.</p>
+          <div class="fc-tags">
+            <span>4 Rooms</span><span>WebSocket</span><span>Threaded</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-xl-3 feat-col">
+        <div class="feat-card" style="--fc-color:#ff4757">
+          <div class="fc-glow"></div>
+          <div class="fc-icon"><i class="bi bi-shield-fill-check"></i></div>
+          <h3 class="fc-title">Protect Mode</h3>
+          <p class="fc-desc">Proximity-aware alarm: buzzer beep rate scales with how close an object is to the radar. Flame and gate events trigger instant alerts.</p>
+          <div class="fc-tags">
+            <span>Buzzer</span><span>Proximity</span><span>Edge Detect</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-xl-3 feat-col">
+        <div class="feat-card" style="--fc-color:#a78bfa">
+          <div class="fc-glow"></div>
+          <div class="fc-icon"><i class="bi bi-bar-chart-fill"></i></div>
+          <h3 class="fc-title">Live Analytics</h3>
+          <p class="fc-desc">MongoDB Atlas logs LED sessions (on-time, energy in Wh), flame events with duration, and gate open/close history. Stats refresh every 5 seconds.</p>
+          <div class="fc-tags">
+            <span>MongoDB</span><span>Sessions</span><span>Energy</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================================
+     COMPONENTS
+     ===================================================================== -->
+<section id="components" class="home-section home-section-alt">
+  <div class="container">
+    <div class="section-hdr text-center">
+      <span class="sec-tag">Hardware</span>
+      <h2 class="sec-title">Components</h2>
+      <p class="sec-sub">Off-the-shelf hardware, carefully wired together into a complete system</p>
+    </div>
+
+    <div class="comp-grid">
+      <div class="comp-card comp-anim"><div class="comp-emoji">🧠</div><div class="comp-name">ESP32</div><div class="comp-role">Dual-core MCU · WiFi</div></div>
+      <div class="comp-card comp-anim"><div class="comp-emoji">📡</div><div class="comp-name">HC-SR04</div><div class="comp-role">Ultrasonic · 2cm–4m</div></div>
+      <div class="comp-card comp-anim"><div class="comp-emoji">⚙️</div><div class="comp-name">SG90 Servo</div><div class="comp-role">180° sweep mechanism</div></div>
+      <div class="comp-card comp-anim"><div class="comp-emoji">🔥</div><div class="comp-name">Flame Sensor</div><div class="comp-role">IR fire detection</div></div>
+      <div class="comp-card comp-anim"><div class="comp-emoji">🚪</div><div class="comp-name">Reed Switch</div><div class="comp-role">Magnetic gate sensor</div></div>
+      <div class="comp-card comp-anim"><div class="comp-emoji">💡</div><div class="comp-name">4× LEDs</div><div class="comp-role">Room lights · GPIO</div></div>
+      <div class="comp-card comp-anim"><div class="comp-emoji">🔔</div><div class="comp-name">Active Buzzer</div><div class="comp-role">Alarm · protect mode</div></div>
+      <div class="comp-card comp-anim"><div class="comp-emoji">🔋</div><div class="comp-name">Power Supply</div><div class="comp-role">5V regulated boost</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================================
+     TECH STACK
+     ===================================================================== -->
+<section id="tech" class="home-section">
+  <div class="container">
+    <div class="section-hdr text-center">
+      <span class="sec-tag">Software</span>
+      <h2 class="sec-title">Tech Stack</h2>
+      <p class="sec-sub">Chosen for low latency, real-time communication, and cloud scalability</p>
+    </div>
+
+    <div class="tech-grid">
+      <div class="tech-item tech-anim" style="--tc:#00ff88">
+        <div class="ti-icon"><i class="bi bi-lightning-charge-fill"></i></div>
+        <div class="ti-name">FastAPI</div>
+        <div class="ti-role">Python backend</div>
+      </div>
+      <div class="tech-item tech-anim" style="--tc:#54a0ff">
+        <div class="ti-icon"><i class="bi bi-cpu-fill"></i></div>
+        <div class="ti-name">MicroPython</div>
+        <div class="ti-role">ESP32 firmware</div>
+      </div>
+      <div class="tech-item tech-anim" style="--tc:#00c864">
+        <div class="ti-icon"><i class="bi bi-database-fill"></i></div>
+        <div class="ti-name">MongoDB Atlas</div>
+        <div class="ti-role">Cloud database</div>
+      </div>
+      <div class="tech-item tech-anim" style="--tc:#ffa502">
+        <div class="ti-icon"><i class="bi bi-arrow-left-right"></i></div>
+        <div class="ti-name">WebSocket</div>
+        <div class="ti-role">Real-time push</div>
+      </div>
+      <div class="tech-item tech-anim" style="--tc:#a78bfa">
+        <div class="ti-icon"><i class="bi bi-grid-fill"></i></div>
+        <div class="ti-name">Bootstrap 5</div>
+        <div class="ti-role">Responsive UI</div>
+      </div>
+      <div class="tech-item tech-anim" style="--tc:#ff4757">
+        <div class="ti-icon"><i class="bi bi-play-circle-fill"></i></div>
+        <div class="ti-name">GSAP 3</div>
+        <div class="ti-role">Animations</div>
+      </div>
+      <div class="tech-item tech-anim" style="--tc:#00ff88">
+        <div class="ti-icon"><i class="bi bi-server"></i></div>
+        <div class="ti-name">Uvicorn</div>
+        <div class="ti-role">ASGI server</div>
+      </div>
+      <div class="tech-item tech-anim" style="--tc:#54a0ff">
+        <div class="ti-icon"><i class="bi bi-cloud-fill"></i></div>
+        <div class="ti-name">Motor</div>
+        <div class="ti-role">Async MongoDB</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================================
+     CTA
+     ===================================================================== -->
+<section id="cta" class="cta-section">
+  <div class="cta-glow-blob"></div>
+  <div class="container text-center position-relative">
+    <h2 class="cta-title" id="cta-title">Ready to control your home?</h2>
+    <p class="cta-sub" id="cta-sub">Log in to access the live dashboard and analytics</p>
+    <button class="btn-cta" id="btn-cta"
+            data-bs-toggle="modal" data-bs-target="#login-modal">
+      <i class="bi bi-lock-open-fill me-2"></i>Access Dashboard
+    </button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="home-footer">
+  <div class="container text-center">
+    <div class="footer-logo"><i class="bi bi-house-gear-fill"></i> Smart Home IoT</div>
+    <p class="footer-line">ESP32 · FastAPI · MongoDB Atlas · WebSocket · Bootstrap · GSAP</p>
+  </div>
+</footer>
+
+<!-- =====================================================================
+     LOGIN MODAL
+     ===================================================================== -->
+<div class="modal fade" id="login-modal" tabindex="-1" aria-labelledby="loginLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content lm-content">
+      <div class="lm-header">
+        <div class="lm-icon-wrap"><i class="bi bi-house-gear-fill"></i></div>
+        <h5 class="lm-title" id="loginLabel">Smart Home Access</h5>
+        <p class="lm-hint">Enter your credentials to continue</p>
+      </div>
+
+      <div class="lm-body">
+        <div class="lm-field">
+          <label class="lm-label" for="login-username">Username</label>
+          <div class="lm-input-wrap">
+            <i class="bi bi-person-fill lm-ico"></i>
+            <input id="login-username" type="text" class="lm-input"
+                   placeholder="admin" autocomplete="username" />
+          </div>
+        </div>
+
+        <div class="lm-field">
+          <label class="lm-label" for="login-password">Password</label>
+          <div class="lm-input-wrap">
+            <i class="bi bi-lock-fill lm-ico"></i>
+            <input id="login-password" type="password" class="lm-input"
+                   placeholder="••••••••" autocomplete="current-password"
+                   onkeydown="if(event.key==='Enter') doLogin()" />
+            <button class="lm-eye-btn" onclick="togglePwd()" type="button">
+              <i class="bi bi-eye" id="eye-icon"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="login-error" class="lm-error d-none"></div>
+
+        <button class="btn-lm-submit" id="btn-login-submit" onclick="doLogin()">
+          <span id="lm-btn-text"><i class="bi bi-arrow-right-circle-fill me-2"></i>Login</span>
+          <span id="lm-btn-spin" class="d-none">
+            <span class="spinner-border spinner-border-sm me-2"></span>Verifying…
+          </span>
+        </button>
+      </div>
+
+      <div class="lm-footer-note">
+        <i class="bi bi-shield-lock me-1"></i>Credentials verified against MongoDB Atlas
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/home.js"></script>
+</body>
+</html>

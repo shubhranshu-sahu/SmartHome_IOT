@@ -55,15 +55,25 @@
     <a href="stats.html" class="btn-nav-link">
       <i class="bi bi-bar-chart-fill me-1"></i>Stats
     </a>
-    <div class="d-flex align-items-center gap-2">
+    <!-- ESP32 liveness (separate from backend WS) -->
+    <div class="d-flex align-items-center gap-1" title="ESP32 device status">
+      <div class="conn-dot offline" id="esp32-dot"></div>
+      <span class="small text-dim d-none d-sm-inline" id="esp32-text">ESP32 Offline</span>
+    </div>
+    <!-- Backend WS connection -->
+    <div class="d-flex align-items-center gap-1" title="Backend server status">
       <div class="conn-dot" id="conn-dot"></div>
-      <span class="small text-dim" id="conn-text">Connecting…</span>
+      <span class="small text-dim d-none d-md-inline" id="conn-text">Connecting…</span>
     </div>
     <span class="d-none d-sm-flex align-items-center gap-1 small text-dim">
       <i class="bi bi-clock"></i>
       <span id="last-update">--</span>
     </span>
     <span class="d-none d-md-block small mono text-accent" id="clock"></span>
+    <!-- Logout -->
+    <button class="btn-logout" onclick="logoutAndRedirect()" title="Logout">
+      <i class="bi bi-box-arrow-right"></i>
+    </button>
   </div>
 </nav>
 
@@ -104,9 +114,19 @@
     </div>
 
     <!-- ============================================================
-         RIGHT COLUMN — Controls
+         RIGHT COLUMN — Controls (wrapped so they can be disabled
+         when ESP32 is offline)
          ============================================================ -->
-    <div class="col-12 col-lg-5 d-flex flex-column gap-3">
+    <div class="col-12 col-lg-5">
+
+      <!-- ESP32 offline warning — hidden when online -->
+      <div id="esp32-offline-warn" class="esp32-offline-banner d-none">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        ESP32 is offline — controls are paused until it reconnects
+      </div>
+
+      <!-- All controls that require ESP32 wrapped here -->
+      <div id="esp32-controls">
 
       <!-- ── Sensor Status (Flame + Gate) ── -->
       <div class="row g-2">
@@ -221,6 +241,7 @@
         </div>
       </div>
 
+      </div><!-- /esp32-controls -->
     </div><!-- /col-lg-5 -->
   </div><!-- /row -->
 </main>
@@ -238,6 +259,11 @@
 
 <!-- App JS — LOAD ORDER MATTERS -->
 <script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  // Auth guard — redirect to home.html if not logged in
+  requireAuth().catch(() => {});
+</script>
 <script src="js/api.js"></script>
 <script src="js/ws.js"></script>
 <script src="js/radar.js"></script>

@@ -4,6 +4,7 @@
 
 let _radar = null;
 let _wsOnline = false;
+let _esp32Online = false;      // Separate from WS status
 let _lastUpdate = null;
 let _fallbackInterval = null;
 
@@ -15,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
         _wsOnline = true;
         _setOnlineUI(true);
         _hideOffline();
-        // Stop HTTP fallback if it was running
         if (_fallbackInterval) { clearInterval(_fallbackInterval); _fallbackInterval = null; }
     });
 
@@ -23,18 +23,16 @@ document.addEventListener('DOMContentLoaded', () => {
         _wsOnline = false;
         _setOnlineUI(false);
         _showOffline();
-        // Start HTTP fallback polling while WS is down
+        // ESP32 status unknown while WS is down — treat as offline for safety
+        _setEsp32UI(false);
         if (!_fallbackInterval) {
             _fallbackInterval = setInterval(_httpFallbackPoll, 2000);
         }
     });
 
     wsOnMessage(_handleWsMessage);
-
-    // Connect WebSocket
     wsConnect();
 
-    // UI clocks
     setInterval(_tickClock, 1000);
     setInterval(_tickLastSeen, 1000);
     _tickClock();
@@ -47,33 +45,66 @@ function _handleWsMessage(msg) {
 
     switch (msg.type) {
         case 'ping':
-            // Server heartbeat — no action needed
             break;
 
         case 'init':
-            // Full state on first connect (no sweep data yet)
+            // Full state on first connect — includes esp32_online
             if (d.sensor && Object.keys(d.sensor).length) {
                 updateSensorDisplay({ ...d.sensor, leds: d.leds, protect_mode: d.protect_mode });
             }
             updateLedUI(d.leds);
             updateProtectModeUI(d.protect_mode);
+            _setEsp32UI(d.esp32_online === true);
             break;
 
         case 'sensor_update':
-            // ESP32 POST arrived — process full sweep buffer
+            // ESP32 POST arrived — radar + sensors
             if (d.sweep && d.sweep.length > 0) {
                 _radar.processSweep(d.sweep);
             }
-            updateSensorDisplay(d);    // Updates angle/distance metrics + flame/gate
+            updateSensorDisplay(d);
             _lastUpdate = Date.now();
+            _setEsp32UI(true);   // Receiving data = definitely online
             break;
 
         case 'state_update':
-            // LED or protect_mode command was received by backend — reflect immediately
+            // Command echoed back
             updateLedUI(d.leds);
             if (d.protect_mode !== undefined) updateProtectModeUI(d.protect_mode);
+            if (d.esp32_online !== undefined) _setEsp32UI(d.esp32_online);
+            break;
+
+        case 'esp32_status':
+            // Watchdog fired (offline) or ESP32 reconnected (online)
+            _setEsp32UI(d.online);
+            if (!d.online) {
+                // Clear stale sensor readings
+                updateSensorDisplay({ angle: null, distance: null, flame: false, gate: false });
+            }
             break;
     }
+}
+
+// ---- ESP32 status UI ---- //
+
+function _setEsp32UI(online) {
+    _esp32Online = online;
+
+    const dot  = document.getElementById('esp32-dot');
+    const text = document.getElementById('esp32-text');
+    if (dot)  dot.className  = online ? 'conn-dot online' : 'conn-dot offline';
+    if (text) text.textContent = online ? 'ESP32 Online' : 'ESP32 Offline';
+
+    // Grey out the controls that need ESP32
+    const controls = document.getElementById('esp32-controls');
+    if (controls) {
+        controls.style.opacity       = online ? '1' : '0.45';
+        controls.style.pointerEvents = online ? '' : 'none';
+    }
+
+    // Show/hide the offline warning inside controls section
+    const warn = document.getElementById('esp32-offline-warn');
+    if (warn) warn.classList.toggle('d-none', online);
 }
 
 // ---- HTTP fallback (when WS is down) ---- //
@@ -82,20 +113,19 @@ async function _httpFallbackPoll() {
     try {
         const data = await getLatestSensor();
         if (data && data.angle !== undefined) {
-            _radar.update(data.angle, data.distance);
             updateSensorDisplay(data);
             _lastUpdate = Date.now();
         }
     } catch { /* silent — WS reconnect handles recovery */ }
 }
 
-// ---- Connection UI ---- //
+// ---- Backend connection UI ---- //
 
 function _setOnlineUI(ok) {
-    const dot = document.getElementById('conn-dot');
+    const dot  = document.getElementById('conn-dot');
     const text = document.getElementById('conn-text');
-    if (dot) dot.className = ok ? 'conn-dot online' : 'conn-dot offline';
-    if (text) text.textContent = ok ? 'Connected' : 'Offline';
+    if (dot)  dot.className  = ok ? 'conn-dot online' : 'conn-dot offline';
+    if (text) text.textContent = ok ? 'Backend Online' : 'Backend Offline';
 }
 
 function _showOffline() {
@@ -106,10 +136,7 @@ function _hideOffline() {
     document.getElementById('offline-overlay')?.classList.add('d-none');
 }
 
-/** Called by the Reconnect button */
-function reconnect() {
-    wsReconnect();
-}
+function reconnect() { wsReconnect(); }
 
 // ---- Clocks ---- //
 

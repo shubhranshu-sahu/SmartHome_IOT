@@ -7,8 +7,7 @@
 *.env
 !.env.example          # Keep the example file
 
-# esp32/config.json contains WiFi password + API URL — never commit!
-esp32/config.json
+
 
 # ---- Python ----
 __pycache__/

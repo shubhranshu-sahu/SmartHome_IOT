@@ -23,6 +23,17 @@ router = APIRouter(tags=["Sensor"])
 async def receive_sensor_data(request: Request):
     data = await request.json()
 
+    # ---- Mark ESP32 as alive ----
+    import time
+    state.last_sensor_post_ts = time.time()
+    was_online = state.esp32_online
+    state.esp32_online = True
+
+    # Rising edge: ESP32 just came back online
+    if not was_online:
+        print("[SENSOR] ✓ ESP32 came online")
+        await manager.broadcast({"type": "esp32_status", "data": {"online": True}})
+
     sweep = data.get("sweep", [])
 
     # Latest angle/distance from last item in sweep buffer
@@ -73,6 +84,7 @@ async def receive_sensor_data(request: Request):
             "gate":         data.get("gate", False),
             "leds":         state.led_states,
             "protect_mode": state.protect_mode,
+            "esp32_online": True,
         }
     })
 

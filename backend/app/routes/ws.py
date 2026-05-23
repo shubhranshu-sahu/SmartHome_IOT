@@ -22,6 +22,7 @@ def _full_state() -> dict:
         "leds":         state.led_states,
         "protect_mode": state.protect_mode,
         "sensor":       state.latest_sensor,
+        "esp32_online": state.esp32_online,
     }
 
 

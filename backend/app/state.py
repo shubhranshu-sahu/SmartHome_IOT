@@ -28,6 +28,13 @@ last_flame_state: bool = False
 # ---- Gate edge tracking ----
 last_gate_state: bool = False
 
+# ---- ESP32 liveness ----
+# Updated every time a /sensor-data POST arrives.
+# Watchdog in main.py sets esp32_online=False if no POST in >5s.
+import time as _time
+last_sensor_post_ts: float = 0.0
+esp32_online: bool = False
+
 # ---- LED session tracking (in-memory, written to MongoDB on turn-off) ----
 # Stores {room: datetime_turned_on} for currently-ON LEDs
 import datetime as _dt

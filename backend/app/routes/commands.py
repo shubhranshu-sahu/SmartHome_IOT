@@ -57,20 +57,22 @@ async def queue_command(request: Request):
         room = cmd.get("room")
         val  = cmd.get("state", 0)
         key  = f"room{room}"
-        await _track_led_change(key, val)
+        if state.esp32_online:
+            await _track_led_change(key, val)   # Only persist when ESP32 can act on it
         state.led_states[key] = val
 
     elif action == "set_all":
         val = cmd.get("state", 0)
         for r in range(1, 5):
-            await _track_led_change(f"room{r}", val)
+            if state.esp32_online:
+                await _track_led_change(f"room{r}", val)
             state.led_states[f"room{r}"] = val
 
     elif action == "protect_mode":
         state.protect_mode = cmd.get("state", False)
         print("[CMD] Protect mode:", state.protect_mode)
 
-    # --- Queue for ESP32 ---
+    # --- Queue for ESP32 (picks it up on next 300ms poll) ---
     state.pending_commands.append(cmd)
     print("[CMD] Queued:", cmd)
 
@@ -80,10 +82,15 @@ async def queue_command(request: Request):
         "data": {
             "leds":         state.led_states,
             "protect_mode": state.protect_mode,
+            "esp32_online": state.esp32_online,
         }
     })
 
-    return {"queued": True}
+    return {
+        "queued":       True,
+        "esp32_online": state.esp32_online,
+        # If offline, command is queued and will execute when ESP32 reconnects
+    }
 
 
 # ---- LED session tracking ---- #
