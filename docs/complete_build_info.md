@@ -13,7 +13,9 @@
 4. [Wiring & Voltage Rules](#4-wiring--voltage-rules)
 5. [Software Architecture](#5-software-architecture)
 6. [Phase 1 — WiFi System](#6-phase-1--wifi-system)
-7. [Upcoming Phases](#7-upcoming-phases)
+7. [Known Behavioural Limitations](#7-known-behavioural-limitations)
+8. [Phase 2 — Network Pipeline](#8-phase-2--network-pipeline)
+9. [Remaining Phases](#9-remaining-phases)
 
 ---
 
@@ -491,22 +493,230 @@ When the phone connects to a WiFi network while hotspot is active:
 
 ---
 
-## 8. Upcoming Phases
+## 8. Phase 2 — Network Pipeline ✅
 
+### Goal
+Establish reliable **ESP32 ↔ FastAPI** communication over WiFi before building any frontend, database, or radar logic.
 
-| Phase | Goal | Key Files to Add |
-|-------|------|-----------------|
-| **Phase 2** | ESP32 pings FastAPI `/health` over WiFi — verifies full network path | `api.py` (simple GET) |
-| **Phase 3** | Test 4 room LEDs — one at a time with 220 Ω resistor | `leds.py` |
-| **Phase 4** | Test buzzer on GPIO 26 | `buzzer.py` |
-| **Phase 5** | HC-SR04 static distance reading (no servo yet). Voltage divider on ECHO mandatory. | `sensors.py` |
-| **Phase 6** | SG90 servo sweep (no ultrasonic). 100 µF cap on 5V required. | `servo_control.py` |
-| **Phase 7** | Radar — servo + HC-SR04 combined. JSON `{angle, distance}` to console. | `radar.py` |
-| **Phase 8** | ESP32 POSTs sensor data to FastAPI `/sensor-data` | `api.py` (POST) |
-| **Phase 9** | FastAPI command queue → ESP32 polls `/command/pending` → LED/buzzer control | Backend routes |
-| **Phase 10** | Phone dashboard: WebSocket radar canvas + LED toggle buttons | `static/index.html` |
-| **Phase 11** | Optional sensors: KY-026 flame (GPIO 34), FC-51 IR (GPIO 35) | `sensors.py` update |
-| **Phase 12** | Final integration, demo polish | — |
+Verify every layer of the stack:
+- WiFi reachability ✅
+- HTTP request/response ✅
+- JSON serialisation/deserialisation ✅
+- API base URL resolution from `config.json` ✅
+- Sensor data flowing to backend ✅
+- Command queue polling working ✅
+
+---
+
+### Project Folder Structure (after Phase 2)
+
+```
+my iot project/
+├── docs/
+│   └── complete_build_info.md
+├── esp32/
+│   ├── config.json          ← WiFi credentials + API base URL
+│   ├── config.py            ← All constants and pin numbers
+│   ├── hardware.py          ← D2 WiFi status LED
+│   ├── wifi.py              ← WiFi connect / reconnect logic
+│   ├── wifi_manager.py      ← Captive portal (AP mode)
+│   ├── main.py              ← Orchestrator — Phase 2
+│   ├── api.py               ← All HTTP calls to backend     [NEW]
+│   ├── leds.py              ← Room LED control (4 LEDs)     [NEW]
+│   ├── buzzer.py            ← Active buzzer control         [NEW]
+│   ├── sensors.py           ← Flame + IR sensor reads       [NEW]
+│   └── radar.py             ← Servo sweep + HC-SR04         [NEW]
+└── backend/
+    ├── main.py              ← FastAPI app + router includes  [NEW]
+    ├── requirements.txt     ← fastapi, uvicorn               [NEW]
+    ├── render.yaml          ← Render.com deploy config       [NEW]
+    └── app/
+        ├── __init__.py
+        ├── state.py         ← Shared in-memory state        [NEW]
+        └── routes/
+            ├── __init__.py
+            ├── health.py    ← GET /health                   [NEW]
+            ├── sensor.py    ← POST /sensor-data             [NEW]
+            └── commands.py  ← GET/POST /command             [NEW]
+```
+
+---
+
+### New ESP32 Files
+
+| File | Purpose |
+|------|---------|
+| `api.py` | HTTP communication layer. All backend calls go here. Wraps every request in try/except, returns safe defaults on failure. Caches API base URL from `config.json`. |
+| `leds.py` | Room LED control. `set_room(n, state)`, `set_all(state)`, `get_states()`. Initialises all 4 LEDs off at import. |
+| `buzzer.py` | Active buzzer. `on()`, `off()`, `beep(ms)`, `double_beep()`. Blocking during beep duration (kept ≤200ms). |
+| `sensors.py` | KY-026 flame + FC-51 IR reads. Both are active-low — returns `True` when triggered. GPIO 34 & 35 are input-only pins. |
+| `radar.py` | SG90 sweep + HC-SR04 distance. `sweep_step()` advances one angle step and returns `{"angle", "distance"}`. Not yet called in main.py (Phase 7). |
+
+### Updated ESP32 Files
+
+| File | What Changed |
+|------|--------------|
+| `config.py` | Added `API_HEALTH_INTERVAL_MS = 15000`, `SENSOR_POST_INTERVAL_MS = 2000`, `COMMAND_POLL_INTERVAL_MS = 500` |
+| `api.py` | Fixed `_get_base()` to validate api_base — falls back to `DEFAULT_API_BASE` if empty string or not starting with `http` |
+| `main.py` | Full Phase 2 orchestrator. `ticks_ms()` scheduling, no blocking sleeps. Imports all modules. Radar sweep commented out for Phase 7. |
+
+---
+
+### New Backend Files
+
+| File | Purpose |
+|------|---------|
+| `backend/main.py` | FastAPI `app` instance. Adds CORS middleware. Includes all three routers. No logic here. |
+| `backend/app/state.py` | Shared in-memory state: `pending_commands` list and `latest_sensor` dict. All routes import from here. |
+| `backend/app/routes/health.py` | `GET /health` → `{"status": "ok"}` |
+| `backend/app/routes/sensor.py` | `POST /sensor-data` → stores + prints. `GET /sensor-data/latest` → returns last snapshot. |
+| `backend/app/routes/commands.py` | `GET /command/pending` → returns + clears queue. `POST /command` → queues command. `GET /command/queue` → inspects without consuming. |
+
+### Backend API Endpoints Summary
+
+| Method | Endpoint | Who calls it | Purpose |
+|--------|----------|--------------|---------|
+| GET | `/health` | ESP32 (every 15s) | Pipeline verification |
+| POST | `/sensor-data` | ESP32 (every 2s) | Upload sensor readings |
+| GET | `/sensor-data/latest` | Debug / browser | See last sensor snapshot |
+| GET | `/command/pending` | ESP32 (every 500ms) | Receive + consume commands |
+| POST | `/command` | Postman / dashboard | Queue command for ESP32 |
+| GET | `/command/queue` | Debug | Inspect queue without consuming |
+
+**Run command:**
+```
+py -3.11 -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
+*(Run from `backend/` folder)*
+
+**Auto-docs (no Postman needed):** `http://192.168.1.5:8000/docs`
+
+---
+
+### What Was Verified During Testing
+
+```
+✅ ESP32 connects to WiFi → LED solid ON
+✅ [API] Base URL: http://192.168.1.5:8000 loaded from config.json
+✅ Sensor data POSTed every 2s → backend prints [SENSOR] Received: {...}
+✅ Health ping every 15s → backend prints [HEALTH] Ping received
+✅ Command poll every 500ms → 200 OK returned
+✅ flame: True detected when lighter held near KY-026 sensor
+✅ gate: True detected when hand blocked FC-51 IR beam
+✅ flame + gate return to False when removed
+✅ Both sensors work correctly with active-low logic
+✅ Radar sweep active — angles and real distances flowing to backend
+```
+
+### Bugs Fixed During Phase 2
+
+#### Bug — api_base empty string crashes urequests
+**Problem:** Captive portal's API URL field was left blank during setup. Saved `api_base: ""` to `config.json`. `urequests` received empty string URL and crashed with `need more than 2 values to unpack` and `Unsupported protocol:`.
+
+**Fix:** `api.py` `_get_base()` now validates the loaded URL:
+```python
+if url and url.startswith("http"):
+    _base_url = url
+else:
+    _base_url = DEFAULT_API_BASE   # safe fallback
+```
+
+---
+
+## 9. Phase 3 — Radar (Servo + HC-SR04) ✅
+
+### Goal
+Integrate servo sweep + HC-SR04 distance reading into the running system. Real angle+distance data flowing to FastAPI alongside flame/gate/LED state.
+
+### What Was Built
+- `radar.py` fully operational: continuous sweep 15°→165°→015°, HC-SR04 reads at each step
+- Runs in a **background `_thread`** — completely independent of WiFi/HTTP calls
+- `main.py` updated: `radar.start()` at boot, `radar.get_latest()` on each sensor POST
+
+### Bugs Found and Fixed
+
+#### Bug 1 — Placeholder overwrote real radar data
+**Problem:** In `main.py`, two consecutive lines:
+```python
+radar_data = radar.sweep_step()           # ← real data returned here
+radar_data = {"angle": 0, "distance": None}  # ← IMMEDIATELY overwritten!
+```
+The servo moved but all real readings were discarded. Backend always received `angle: 0, distance: None`.
+
+**Fix:** Removed the placeholder line. Real data now stored in `_radar_data`.
+
+#### Bug 2 — HTTP calls blocked servo sweep
+**Problem:** `main.py` was single-threaded. Every HTTP call (health ping ≈200ms, sensor POST ≈200ms, command poll ≈100ms) caused the servo to freeze mid-sweep. Movement was choppy and irregular.
+
+**Decision: `_thread`**
+Used MicroPython’s `_thread` module to run the radar sweep in a background thread:
+```
+Background Thread:              Main Thread:
+  while True:                     while True:
+    set_angle()                       radar.get_latest()  ← instant read
+    get_distance()                    HTTP health ping
+    update _latest dict               HTTP sensor POST
+    (no sleep — runs flat out)        HTTP command poll
+```
+- `_latest` dict updated continuously by radar thread
+- Main thread reads it with `radar.get_latest()` — 0ms cost
+- Servo NEVER pauses for network calls
+
+#### Bug 3 — Initial settle delay hurt more than it helped
+**Problem:** Added 15ms settle delay after `set_angle()` before `get_distance()`. Reasoning was servo vibration would confuse HC-SR04. Testing showed this was unnecessary and added latency without benefit. Original working code had no delay.
+
+**Fix:** Removed settle delay. Servo can move and read distance at full speed.
+
+### Key Design Decisions
+
+| Decision | Choice | Reason |
+|----------|--------|--------|
+| Radar threading | `_thread` | Only way to decouple servo from HTTP in single-core MicroPython |
+| Step size | 3° | Original working value; 2° added no visible benefit |
+| Sweep range | 15° – 165° | Avoids servo hard stops at 0°/180° |
+| Settle delay | None | Not needed; original code had none |
+| Max range filter | 2 – 400 cm | < 2cm = sensor dead zone, > 400cm = physically unreachable |
+
+### Understanding `distance: None`
+
+`None` is **not an error**. It means no object detected at that angle. Causes:
+
+| Cause | Explanation |
+|-------|-------------|
+| Open space | Beam aimed at gap/doorway/open area > 400cm |
+| Sensor dead zone | Object closer than 2cm (physical limit of HC-SR04) |
+| Soft surface | Curtains/foam absorb sound, no echo returns |
+| Angled hard surface | Sound deflects away, echo misses sensor |
+| Narrow object | HC-SR04 cone (~15°) passes around it |
+
+On the radar display: `None` = no blip. `float` = draw a blip at (angle, distance).
+
+### What Was Verified
+```
+✅ Servo sweeps 15° → 165° → 15° continuously
+✅ Distance readings: 30.1 cm, 131.9 cm, 124.06 cm (real objects detected)
+✅ distance: None at angles pointing at open space (correct behaviour)
+✅ Angle changes correctly every POST: 132 → 75 → 21 → 105
+✅ Radar sweep unaffected by HTTP call timing
+✅ Full payload flowing: {angle, distance, flame, gate, leds}
+```
+
+---
+
+## 10. Remaining Phases
+
+| Phase | Status | Goal | Key Files |
+|-------|--------|------|-----------|
+| **Phase 1** | ✅ Done | WiFi provisioning, captive portal, D2 LED | `wifi.py`, `wifi_manager.py`, `hardware.py` |
+| **Phase 2** | ✅ Done | ESP32 ↔ FastAPI pipeline, sensor data flowing | `api.py`, `backend/` |
+| **Phase 3** | ✅ Done | Radar — servo sweep + HC-SR04 in `_thread`, angles + distances live | `radar.py`, `main.py` |
+| **Phase 4** | ✅ Next | Local Dashboard — HTML/JS connects to FastAPI, shows radar canvas, LED buttons, sensor status | `frontend/` |
+| **Phase 5** | ⬜ | Backend WebSocket — push radar data to browser in real-time | `backend/app/routes/ws.py` |
+| **Phase 6** | ⬜ | Backend alerts — flame=True auto-queues buzzer beep | `backend/app/routes/sensor.py` update |
+| **Phase 7** | ⬜ | MongoDB persistence — sensor history logging | `backend/app/database/` |
+| **Phase 8** | ⬜ | Analytics — room on-time, power estimate | Backend + dashboard |
+| **Phase 9** | ⬜ | Deploy — FastAPI on Render, frontend on Vercel | `render.yaml`, Vercel config |
+| **Phase 10** | ⬜ | Final integration + demo polish | — |
 
 ---
 

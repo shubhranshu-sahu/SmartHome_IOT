@@ -1,0 +1,502 @@
+/* ==============================================
+   Smart Home Dashboard — Phase 4 Theme
+   Dark tactical + glassmorphism + Bootstrap 5
+   ============================================== */
+
+:root {
+    --bg:           #070d1a;
+    --surface:      rgba(255,255,255,0.04);
+    --surface-2:    rgba(255,255,255,0.07);
+    --border:       rgba(255,255,255,0.08);
+    --border-hover: rgba(0,255,136,0.3);
+    --accent:       #00ff88;
+    --accent-dim:   rgba(0,255,136,0.10);
+    --danger:       #ff4757;
+    --warning:      #ffa502;
+    --info:         #54a0ff;
+    --purple:       #a78bfa;
+    --text:         #c8d6e8;
+    --muted:        #4a5568;
+    --radar-bg:     #020912;
+    --font-ui:      'Inter', sans-serif;
+    --font-mono:    'Roboto Mono', monospace;
+    --font-display: 'Rajdhani', sans-serif;
+    --radius:       14px;
+    --radius-sm:    10px;
+    --shadow:       0 4px 28px rgba(0,0,0,0.55);
+}
+
+/* ---- Base ---- */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+    background-color: var(--bg);
+    background-image:
+        radial-gradient(ellipse 60% 40% at 15% 10%, rgba(0,255,136,0.05) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 85% 90%, rgba(84,160,255,0.05) 0%, transparent 70%);
+    color: var(--text);
+    font-family: var(--font-ui);
+    min-height: 100vh;
+    font-size: 14px;
+}
+
+.mono { font-family: var(--font-mono) !important; }
+.text-accent { color: var(--accent) !important; }
+.text-dim    { color: var(--muted)  !important; }
+
+/* ======================================================
+   OFFLINE OVERLAY
+   ====================================================== */
+#offline-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(7,13,26,0.88);
+    backdrop-filter: blur(12px);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.offline-box {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 40px 32px;
+    text-align: center;
+    max-width: 360px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+}
+
+.offline-icon {
+    font-size: 3rem;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 12px;
+}
+
+.offline-url {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+    background: var(--accent-dim);
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.btn-reconnect {
+    background: var(--accent-dim);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    border-radius: var(--radius-sm);
+    padding: 10px 28px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: var(--font-ui);
+}
+
+.btn-reconnect:hover {
+    background: rgba(0,255,136,0.2);
+    box-shadow: 0 0 16px rgba(0,255,136,0.3);
+}
+
+/* ======================================================
+   NAVBAR
+   ====================================================== */
+.app-navbar {
+    background: rgba(7,13,26,0.95);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+}
+
+.brand-name {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+}
+
+.brand-sub {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* ======================================================
+   GLASS CARDS
+   ====================================================== */
+.glass-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: border-color 0.3s ease;
+}
+
+.glass-card:hover { border-color: var(--border-hover); }
+
+.card-head {
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.badge-live {
+    margin-left: auto;
+    font-size: 0.6rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--accent-dim);
+    color: var(--accent);
+    border: 1px solid rgba(0,255,136,0.3);
+    letter-spacing: 0.08em;
+    animation: live-pulse 2s ease-in-out infinite;
+}
+
+@keyframes live-pulse { 0%,100%{opacity:1} 50%{opacity:0.45} }
+
+/* ======================================================
+   RADAR
+   ====================================================== */
+.radar-wrapper {
+    background: var(--radar-bg);
+    padding: 16px 16px 0;
+    display: flex;
+    justify-content: center;
+}
+
+#radar-canvas { display: block; }
+
+.radar-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid var(--border);
+}
+
+.metric-cell {
+    padding: 10px 12px;
+    text-align: center;
+}
+
+.metric-cell:first-child { border-right: 1px solid var(--border); }
+
+.metric-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 2px;
+}
+
+.metric-val {
+    font-family: var(--font-mono);
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--accent);
+    line-height: 1.1;
+}
+
+/* ======================================================
+   STATUS CARDS (Flame / Gate)
+   ====================================================== */
+.status-card {
+    padding: 14px 10px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.status-emoji { font-size: 1.7rem; line-height: 1; margin-bottom: 4px; }
+
+.status-tag {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+}
+
+.status-val {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.status-card.flame-danger {
+    border-color: var(--danger) !important;
+    animation: flame-glow 0.8s ease-in-out infinite alternate;
+}
+.status-card.flame-danger .status-val { color: var(--danger); }
+
+@keyframes flame-glow {
+    from { box-shadow: 0 0 0   rgba(255,71,87,0); }
+    to   { box-shadow: 0 0 24px rgba(255,71,87,0.55); }
+}
+
+.status-card.gate-closed .status-val { color: var(--warning); }
+
+/* ======================================================
+   PROTECT MODE CARD
+   ====================================================== */
+.protect-card {
+    transition: all 0.4s ease;
+}
+
+.protect-card.protect-active {
+    border-color: rgba(255,71,87,0.5) !important;
+    box-shadow: 0 0 20px rgba(255,71,87,0.15) !important;
+}
+
+.btn-protect {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 18px;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.82rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+    font-family: var(--font-ui);
+}
+
+.btn-protect:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+    background: rgba(255,71,87,0.08);
+}
+
+.btn-protect.protect-on {
+    background: rgba(255,71,87,0.12);
+    border-color: var(--danger);
+    color: var(--danger);
+    box-shadow: 0 0 12px rgba(255,71,87,0.25);
+    animation: protect-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes protect-pulse {
+    0%,100% { box-shadow: 0 0 12px rgba(255,71,87,0.25); }
+    50%      { box-shadow: 0 0 24px rgba(255,71,87,0.5); }
+}
+
+/* ======================================================
+   LED ROOM TILES
+   ====================================================== */
+.led-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.room-tile {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.25s ease;
+}
+
+.room-tile .r-icon {
+    font-size: 1rem;
+    color: var(--muted);
+    transition: all 0.25s ease;
+    flex-shrink: 0;
+}
+
+.room-tile .r-name {
+    flex: 1;
+    font-size: 0.82rem;
+    font-weight: 500;
+}
+
+.room-tile.led-on {
+    border-color: rgba(255,165,0,0.5);
+    background: rgba(255,165,0,0.07);
+    box-shadow: 0 0 14px rgba(255,165,0,0.12);
+}
+
+.room-tile.led-on .r-icon {
+    color: #ffa502;
+    text-shadow: 0 0 10px rgba(255,165,0,0.9);
+}
+
+.form-check-input.led-toggle { cursor: pointer; width: 2.2em; height: 1.15em; }
+.form-check-input.led-toggle:checked {
+    background-color: #ffa502;
+    border-color: #ffa502;
+    box-shadow: 0 0 6px rgba(255,165,0,0.5);
+}
+.form-check-input.led-toggle:focus { box-shadow: 0 0 0 3px rgba(255,165,0,0.18); }
+
+/* ======================================================
+   ACTION BUTTONS (All On / All Off / Buzzer)
+   ====================================================== */
+.btn-all {
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 8px 14px;
+    transition: all 0.2s ease;
+}
+
+.btn-all-on {
+    background: rgba(0,255,136,0.08);
+    border: 1px solid rgba(0,255,136,0.3);
+    color: var(--accent);
+}
+
+.btn-all-on:hover {
+    background: rgba(0,255,136,0.16);
+    color: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(0,255,136,0.2);
+}
+
+.btn-all-off {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    color: var(--muted);
+}
+
+.btn-all-off:hover {
+    background: rgba(255,255,255,0.08);
+    color: var(--text);
+    border-color: rgba(255,255,255,0.2);
+}
+
+/* Buzzer */
+.btn-buzzer {
+    background: rgba(130,80,255,0.12);
+    border: 1px solid rgba(130,80,255,0.4);
+    color: var(--purple);
+    border-radius: var(--radius);
+    padding: 14px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-family: var(--font-display);
+}
+
+.btn-buzzer i { font-size: 1.4rem; }
+
+.btn-buzzer:hover {
+    background: rgba(130,80,255,0.22);
+    color: #c4b5fd;
+    border-color: rgba(130,80,255,0.7);
+    box-shadow: 0 0 18px rgba(130,80,255,0.3);
+}
+
+.btn-buzzer.buzzing { animation: buzz-shake 0.07s ease-in-out 5; }
+
+@keyframes buzz-shake {
+    0%,100% { transform: translateX(0); }
+    50%      { transform: translateX(4px); }
+}
+
+/* ======================================================
+   INFO CARD
+   ====================================================== */
+.info-card {
+    padding: 12px;
+    text-align: center;
+}
+.info-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1px;
+}
+.info-val {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--accent);
+    font-weight: 500;
+}
+
+/* ======================================================
+   CONNECTION STATUS DOT
+   ====================================================== */
+.conn-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: all 0.4s ease;
+    flex-shrink: 0;
+}
+.conn-dot.online {
+    background: var(--accent);
+    box-shadow: 0 0 7px var(--accent);
+    animation: dot-pulse 2.5s ease-in-out infinite;
+}
+.conn-dot.offline {
+    background: var(--danger);
+    box-shadow: 0 0 6px var(--danger);
+}
+@keyframes dot-pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+/* ======================================================
+   FOOTER
+   ====================================================== */
+.app-footer {
+    border-top: 1px solid var(--border);
+    padding: 8px 20px;
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-align: center;
+}
+
+/* ======================================================
+   SCROLLBAR
+   ====================================================== */
+::-webkit-scrollbar             { width: 5px; }
+::-webkit-scrollbar-track       { background: var(--bg); }
+::-webkit-scrollbar-thumb       { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+
+/* ======================================================
+   RESPONSIVE
+   ====================================================== */
+@media (max-width: 991.98px) { .metric-val { font-size: 1.05rem; } }
+
+@media (max-width: 575.98px) {
+    .app-navbar { padding: 8px 14px; }
+    .brand-name  { font-size: 1rem; }
+    .status-emoji { font-size: 1.4rem; }
+    .metric-val   { font-size: 0.95rem; }
+    .led-grid     { gap: 6px; }
+    .room-tile    { padding: 8px 10px; }
+}

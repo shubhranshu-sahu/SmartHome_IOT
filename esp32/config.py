@@ -28,3 +28,11 @@ BUZZER_PIN = 26
 # --- Optional sensors ---
 FLAME_PIN = 34
 IR_PIN    = 35
+
+# --- API Timing ---
+# Health ping: every 15s  (also keeps Render.com free tier awake)
+# Sensor POST: every 500ms (4× updates → smoother radar + live data)
+# Command poll: every 500ms
+API_HEALTH_INTERVAL_MS   = 15000
+SENSOR_POST_INTERVAL_MS  =   500
+COMMAND_POLL_INTERVAL_MS =   500
