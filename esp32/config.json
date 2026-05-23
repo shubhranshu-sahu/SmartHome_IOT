@@ -1,5 +1,5 @@
 {
-  "wifi_ssid": "Airtel_shub_9231",
-  "wifi_password": "air34642",
+  "wifi_ssid": "test",
+  "wifi_password": "12345678",
   "api_base": "http://192.168.1.5:8000"
 }

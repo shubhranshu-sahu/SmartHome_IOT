@@ -1,89 +1,89 @@
+# =============================================
+# wifi.py  —  Connect to saved WiFi
+# =============================================
+
 import network
 import ujson
 import time
-
-from hardware import *
+from hardware import set_mode, update_led
+from hardware import MODE_DISCONNECTED, MODE_CONNECTED
+from config   import DEFAULT_WIFI_SSID, DEFAULT_WIFI_PASSWORD, DEFAULT_API_BASE
 
 CONFIG_FILE = "config.json"
 
-wlan = network.WLAN(network.STA_IF)
+# One shared station interface
+_wlan = network.WLAN(network.STA_IF)
 
-# =====================================
-# LOAD CONFIG
-# =====================================
+# ---- Config helpers ----
 
 def load_config():
-
     try:
-
         with open(CONFIG_FILE, "r") as f:
-
             return ujson.load(f)
-
     except:
-
         return None
 
-# =====================================
-# SAVE CONFIG
-# =====================================
-
 def save_config(data):
-
     with open(CONFIG_FILE, "w") as f:
-
         ujson.dump(data, f)
 
-# =====================================
-# CONNECT WIFI
-# =====================================
+def _ensure_config():
+    """Return config dict, creating default file if missing."""
+    cfg = load_config()
+    if cfg is None:
+        cfg = {
+            "wifi_ssid":     DEFAULT_WIFI_SSID,
+            "wifi_password": DEFAULT_WIFI_PASSWORD,
+            "api_base":      DEFAULT_API_BASE
+        }
+        save_config(cfg)
+        print("Created default config.json")
+    return cfg
+
+# ---- Connection ----
 
 def connect_wifi():
+    """
+    Try to connect with saved credentials.
+    Returns True on success, False on failure.
+    LED blinks slowly (500 ms) while trying.
+    LED goes solid ON when connected.
+    """
+    cfg  = _ensure_config()
+    ssid = cfg["wifi_ssid"]
+    pwd  = cfg["wifi_password"]
 
-    config = load_config()
+    _wlan.active(True)
 
-    if not config:
+    # Guard: already connected (e.g. retained from previous cycle)
+    if _wlan.isconnected():
+        set_mode(MODE_CONNECTED)
+        print("Already connected! IP:", _wlan.ifconfig()[0])
+        return True
 
-        return False
+    # Clean disconnect before fresh attempt
+    try:
+        _wlan.disconnect()
+    except:
+        pass
 
-    ssid = config["wifi_ssid"]
-    password = config["wifi_password"]
-
-    wlan.active(True)
-
-    wlan.connect(ssid, password)
+    _wlan.connect(ssid, pwd)
 
     set_mode(MODE_DISCONNECTED)
+    print("Connecting to:", ssid)
 
-    print("Connecting WiFi...")
-
-    timeout = 20
-
-    while timeout > 0:
-
+    for _ in range(40):           # 40 × 250 ms = 10 s timeout
         update_led()
-
-        if wlan.isconnected():
-
-            print("Connected")
-            print(wlan.ifconfig())
-
+        if _wlan.isconnected():
             set_mode(MODE_CONNECTED)
-
+            print("Connected! IP:", _wlan.ifconfig()[0])
             return True
+        time.sleep_ms(250)
 
-        time.sleep(0.1)
-
-        timeout -= 1
-
-    print("Connection Failed")
-
+    print("WiFi failed")
     return False
 
-# =====================================
-# CHECK STATUS
-# =====================================
+# ---- Status ----
 
-def wifi_connected():
-
-    return wlan.isconnected()
+def wifi_is_connected():
+    return _wlan.isconnected()

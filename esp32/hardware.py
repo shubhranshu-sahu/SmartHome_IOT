@@ -1,62 +1,53 @@
+# =============================================
+# hardware.py  —  D2 WiFi status LED
+#
+# Non-blocking blink — call update_led()
+# frequently inside your main loop.
+#
+# Modes:
+#   MODE_DISCONNECTED  →  slow blink  500 ms
+#   MODE_AP            →  fast blink  100 ms
+#   MODE_CONNECTED     →  solid ON
+# =============================================
+
 from machine import Pin
 import time
+from config import WIFI_LED_PIN
 
-wifi_led = Pin(2, Pin.OUT)
+# ---- LED object ----
+_led       = Pin(WIFI_LED_PIN, Pin.OUT)
+_led.off()
 
-MODE_CONNECTED = 1
-MODE_DISCONNECTED = 2
-MODE_AP = 3
+# ---- Mode constants ----
+MODE_DISCONNECTED = 0
+MODE_AP           = 1
+MODE_CONNECTED    = 2
 
-current_mode = MODE_DISCONNECTED
+# ---- Internal state ----
+_mode      = MODE_DISCONNECTED
+_led_state = False
+_last_ms   = 0
 
-last_blink = 0
-led_state = False
+# ---- Public API ----
 
 def set_mode(mode):
-
-    global current_mode
-
-    current_mode = mode
+    global _mode
+    _mode = mode
+    if mode == MODE_CONNECTED:
+        _led.on()          # Solid on immediately
 
 def update_led():
+    """Call this as often as possible inside loops."""
+    global _led_state, _last_ms
 
-    global last_blink
-    global led_state
+    if _mode == MODE_CONNECTED:
+        # Already forced solid ON in set_mode()
+        return
+
+    interval = 20 if _mode == MODE_AP else 500
 
     now = time.ticks_ms()
-
-    # =====================================
-    # CONNECTED
-    # =====================================
-
-    if current_mode == MODE_CONNECTED:
-
-        wifi_led.on()
-
-    # =====================================
-    # DISCONNECTED
-    # =====================================
-
-    elif current_mode == MODE_DISCONNECTED:
-
-        if time.ticks_diff(now, last_blink) > 500:
-
-            led_state = not led_state
-
-            wifi_led.value(led_state)
-
-            last_blink = now
-
-    # =====================================
-    # AP MODE
-    # =====================================
-
-    elif current_mode == MODE_AP:
-
-        if time.ticks_diff(now, last_blink) > 100:
-
-            led_state = not led_state
-
-            wifi_led.value(led_state)
-
-            last_blink = now
+    if time.ticks_diff(now, _last_ms) >= interval:
+        _led_state = not _led_state
+        _led.value(_led_state)
+        _last_ms = now
