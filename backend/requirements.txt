@@ -1,3 +1,5 @@
+motor
+pymongo
 fastapi
 uvicorn[standard]
 websockets

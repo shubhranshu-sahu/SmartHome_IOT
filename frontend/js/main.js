@@ -2,8 +2,8 @@
 // main.js — Init, WebSocket orchestration, UI
 // ============================================
 
-let _radar      = null;
-let _wsOnline   = false;
+let _radar = null;
+let _wsOnline = false;
 let _lastUpdate = null;
 let _fallbackInterval = null;
 
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     wsConnect();
 
     // UI clocks
-    setInterval(_tickClock,    1000);
+    setInterval(_tickClock, 1000);
     setInterval(_tickLastSeen, 1000);
     _tickClock();
 });
@@ -46,10 +46,13 @@ function _handleWsMessage(msg) {
     const d = msg.data;
 
     switch (msg.type) {
+        case 'ping':
+            // Server heartbeat — no action needed
+            break;
+
         case 'init':
-            // Full state on first connect
+            // Full state on first connect (no sweep data yet)
             if (d.sensor && Object.keys(d.sensor).length) {
-                _radar.update(d.sensor.angle, d.sensor.distance);
                 updateSensorDisplay({ ...d.sensor, leds: d.leds, protect_mode: d.protect_mode });
             }
             updateLedUI(d.leds);
@@ -57,9 +60,11 @@ function _handleWsMessage(msg) {
             break;
 
         case 'sensor_update':
-            // ESP32 POST arrived — radar + all sensor data
-            _radar.update(d.angle, d.distance);
-            updateSensorDisplay(d);
+            // ESP32 POST arrived — process full sweep buffer
+            if (d.sweep && d.sweep.length > 0) {
+                _radar.processSweep(d.sweep);
+            }
+            updateSensorDisplay(d);    // Updates angle/distance metrics + flame/gate
             _lastUpdate = Date.now();
             break;
 
@@ -87,9 +92,9 @@ async function _httpFallbackPoll() {
 // ---- Connection UI ---- //
 
 function _setOnlineUI(ok) {
-    const dot  = document.getElementById('conn-dot');
+    const dot = document.getElementById('conn-dot');
     const text = document.getElementById('conn-text');
-    if (dot)  dot.className  = ok ? 'conn-dot online' : 'conn-dot offline';
+    if (dot) dot.className = ok ? 'conn-dot online' : 'conn-dot offline';
     if (text) text.textContent = ok ? 'Connected' : 'Offline';
 }
 

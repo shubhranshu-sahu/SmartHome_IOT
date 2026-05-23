@@ -1,0 +1,178 @@
+/* =============================================
+   stats.css — Analytics page styles
+   Extends style.css (loaded first)
+   ============================================= */
+
+/* ---- Navbar link ---- */
+.btn-nav-link {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+}
+.btn-nav-link:hover { color: var(--accent); border-color: rgba(0,255,136,0.3); }
+
+/* ---- Offline banner ---- */
+.alert-banner {
+    background: rgba(255,71,87,0.08);
+    border: 1px solid rgba(255,71,87,0.3);
+    border-radius: var(--radius-sm);
+    padding: 10px 16px;
+    font-size: 0.82rem;
+    color: var(--danger);
+    display: flex;
+    align-items: center;
+}
+
+/* ---- Summary stat cards ---- */
+.stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 14px;
+    text-align: center;
+    transition: border-color 0.3s ease;
+}
+.stat-card:hover { border-color: var(--border-hover); }
+
+.stat-icon { font-size: 1.5rem; margin-bottom: 6px; }
+.stat-val  { font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; color: var(--text); line-height: 1.1; }
+.stat-label { font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-top: 3px; }
+
+/* ---- LED usage bars ---- */
+.led-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+.led-bar-label {
+    width: 58px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.led-bar-label i { font-size: 0.75rem; }
+.led-bar-track {
+    flex: 1;
+    height: 8px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.led-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #ffa502, #ff6b00);
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 4px;
+}
+.led-bar-time {
+    width: 54px;
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    flex-shrink: 0;
+}
+.led-bar-time.has-time { color: var(--warning); }
+
+/* ---- Battery breakdown ---- */
+.battery-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.82rem;
+}
+.battery-row:last-child { border-bottom: none; }
+.bat-label { color: var(--text); display: flex; align-items: center; gap: 6px; }
+.bat-val   { color: var(--muted); }
+.total-row .bat-label,
+.total-row .bat-val { color: var(--accent); font-size: 0.9rem; }
+.fw-600 { font-weight: 600; }
+
+/* ---- Event list ---- */
+.event-list {
+    max-height: 220px;
+    overflow-y: auto;
+}
+.event-empty {
+    padding: 24px 16px;
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--muted);
+}
+.event-item {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.8rem;
+    transition: background 0.2s ease;
+}
+.event-item:last-child { border-bottom: none; }
+.event-item:hover { background: var(--surface-2); }
+
+.event-icon { font-size: 1rem; flex-shrink: 0; }
+
+.event-body { flex: 1; }
+.event-time { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); }
+.event-desc { color: var(--text); font-size: 0.78rem; }
+
+.event-dur {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+.dur-flame  { background: rgba(255,71,87,0.15); color: var(--danger); }
+.dur-open   { background: rgba(84,160,255,0.15); color: var(--info); }
+.dur-closed { background: rgba(255,255,255,0.06); color: var(--muted); }
+
+/* ---- Badge count ---- */
+.badge-count {
+    font-size: 0.6rem;
+    font-family: var(--font-mono);
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: var(--surface-2);
+    color: var(--muted);
+    border: 1px solid var(--border);
+}
+
+/* ---- Skeleton loading ---- */
+.skeleton-line {
+    height: 12px;
+    background: linear-gradient(90deg, var(--surface) 25%, var(--surface-2) 50%, var(--surface) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-shine 1.5s infinite;
+    border-radius: 6px;
+    margin-bottom: 16px;
+}
+.skeleton-line.short { width: 60%; }
+@keyframes skeleton-shine {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 575.98px) {
+    .stat-val  { font-size: 1.3rem; }
+    .stat-icon { font-size: 1.2rem; }
+    .led-bar-label { width: 50px; font-size: 0.72rem; }
+    .led-bar-time  { width: 46px; font-size: 0.66rem; }
+}

@@ -12,13 +12,11 @@ const CONFIG = Object.freeze({
     // Render deployment (uncomment + change when deploying):
     // API_BASE: 'https://your-app.onrender.com',
 
-    // Radar display settings
-    MAX_DISTANCE_CM:  150,
-    BLIP_LIFETIME_MS: 6000,
-    MIN_ANGLE:        15,
-    MAX_ANGLE:        165,
-    SWEEP_SPEED_DEG_S: 200,
+    // Radar geometry (must match radar.py constants)
+    MAX_DISTANCE_CM: 150,
+    MIN_ANGLE:       15,
+    MAX_ANGLE:       165,
 
     // WebSocket reconnect interval
-    WS_RECONNECT_MS:  4000,
+    WS_RECONNECT_MS: 4000,
 });

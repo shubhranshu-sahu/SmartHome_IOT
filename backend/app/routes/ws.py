@@ -2,11 +2,11 @@
 # app/routes/ws.py  —  WebSocket endpoint
 #
 # Browser connects here for real-time updates.
-# On connect: sends full current state immediately.
-# On each ESP32 POST: backend broadcasts sensor_update.
-# On each command: backend broadcasts state_update.
+# Server sends a heartbeat every 20s to keep the
+# connection alive through proxies and firewalls.
 # =============================================
 
+import asyncio
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from app.ws_manager import manager
@@ -14,9 +14,10 @@ from app import state
 
 router = APIRouter(tags=["WebSocket"])
 
+HEARTBEAT_INTERVAL = 20   # seconds
+
 
 def _full_state() -> dict:
-    """Return complete current state for the 'init' message."""
     return {
         "leds":         state.led_states,
         "protect_mode": state.protect_mode,
@@ -30,13 +31,21 @@ async def websocket_endpoint(ws: WebSocket):
     print(f"[WS] Client connected  — active: {manager.count}")
 
     try:
-        # Push full state immediately so UI doesn't wait for first ESP32 POST
+        # Push current state immediately on connect
         await ws.send_json({"type": "init", "data": _full_state()})
 
-        # Hold connection open — ESP32 POSTs trigger broadcasts via manager.broadcast()
+        # Keep connection alive with periodic heartbeat
         while True:
-            await ws.receive_text()   # raises WebSocketDisconnect on close
+            try:
+                # Wait for a client message, but also send heartbeat if idle
+                await asyncio.wait_for(ws.receive_text(), timeout=HEARTBEAT_INTERVAL)
+            except asyncio.TimeoutError:
+                # No message received — send a ping to keep the socket alive
+                await ws.send_json({"type": "ping"})
 
     except WebSocketDisconnect:
         manager.disconnect(ws)
         print(f"[WS] Client disconnected — active: {manager.count}")
+    except Exception as e:
+        manager.disconnect(ws)
+        print(f"[WS] Error: {e} — active: {manager.count}")

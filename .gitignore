@@ -1,0 +1,51 @@
+# =============================================
+# .gitignore — Smart Home IoT Project
+# =============================================
+
+# ---- Environment & secrets ----
+.env
+*.env
+!.env.example          # Keep the example file
+
+# esp32/config.json contains WiFi password + API URL — never commit!
+esp32/config.json
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Pip / build
+*.egg-info/
+dist/
+build/
+*.egg
+pip-log.txt
+
+# ---- IDE / OS ----
+.vscode/settings.json
+.idea/
+*.suo
+*.user
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ---- Logs ----
+*.log
+logs/
+
+# ---- MicroPython / ESP32 ----
+*.mpy              # Compiled MicroPython bytecode
+
+# ---- Node (if frontend tooling added later) ----
+node_modules/
+.npm/

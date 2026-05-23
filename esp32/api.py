@@ -52,7 +52,7 @@ def ping_health():
     """
     try:
         url = _get_base() + "/health"
-        r   = urequests.get(url, timeout=5)
+        r   = urequests.get(url, timeout=2)
         data = r.json()
         r.close()
         print("[API] Health OK →", data)
@@ -75,7 +75,7 @@ def send_sensor_data(payload):
             url,
             data=body,
             headers={"Content-Type": "application/json"},
-            timeout=5
+            timeout=2
         )
         r.close()
         print("[API] Sensor data sent ✓")
@@ -93,7 +93,7 @@ def get_pending_commands():
     """
     try:
         url = _get_base() + "/command/pending"
-        r   = urequests.get(url, timeout=5)
+        r   = urequests.get(url, timeout=2)
         data = r.json()
         r.close()
         if data.get("commands"):
