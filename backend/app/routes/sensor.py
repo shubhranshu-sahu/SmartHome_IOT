@@ -56,8 +56,11 @@ async def receive_sensor_data(request: Request):
     new_flame = data.get("flame", False)
     if new_flame and not state.last_flame_state:
         # Rising edge — flame just detected
+        # NOTE: We do NOT queue a beep command here.
+        # The ESP32 reads the flame sensor directly in its _update_buzzer()
+        # loop and activates the buzzer immediately with zero network latency.
+        # Queueing a beep from the backend caused duplicate/stacked beeps.
         print("[SENSOR] 🔥 FLAME DETECTED")
-        state.pending_commands.append({"action": "beep", "duration_ms": 1000})
         await _write_flame_event(detected=True)
     elif not new_flame and state.last_flame_state:
         # Falling edge — flame cleared

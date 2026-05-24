@@ -104,72 +104,86 @@ class RadarDisplay {
         const wsNow = performance.now();
         sweepArr.sort((a, b) => a.seq - b.seq);
 
-        const last = sweepArr[sweepArr.length - 1];
+        // --- Interpolate large angle gaps ---
+        // If two consecutive readings are >GAP_THRESHOLD° apart (happens when
+        // the servo moved during a POST that was blocking on the old architecture,
+        // or simply because step size × speed > sampling rate), linearly
+        // interpolate synthetic intermediate readings so the scan history fills
+        // smoothly (15→18→21→…→45 instead of 15→45).
+        const GAP_THRESHOLD = 4;  // degrees — smaller than servo step gap
+        const filled = [];
+        for (let i = 0; i < sweepArr.length; i++) {
+            filled.push(sweepArr[i]);
+            if (i < sweepArr.length - 1) {
+                const a = sweepArr[i];
+                const b = sweepArr[i + 1];
+                const gap = Math.abs(b.angle - a.angle);
+                if (gap > GAP_THRESHOLD && a.distance != null && b.distance != null) {
+                    const steps = Math.floor(gap / GAP_THRESHOLD);
+                    for (let s = 1; s < steps; s++) {
+                        const t = s / steps;
+                        filled.push({
+                            seq:      a.seq + t,
+                            angle:    a.angle + (b.angle - a.angle) * t,
+                            distance: a.distance + (b.distance - a.distance) * t,
+                            dir:      a.dir,
+                            rel_ms:   a.rel_ms != null && b.rel_ms != null
+                                        ? a.rel_ms + (b.rel_ms - a.rel_ms) * t
+                                        : (a.rel_ms || 0),
+                        });
+                    }
+                }
+            }
+        }
+
+        const last = filled[filled.length - 1];
 
         // --- Calibrate sweep speed from batch timing ---
-        if (sweepArr.length >= 2) {
-            const first = sweepArr[0];
+        if (filled.length >= 2) {
+            const first = filled[0];
             const batchMs = Math.abs((last.rel_ms || 0) - (first.rel_ms || 0));
-            const angleTravelled = sweepArr.reduce((sum, m, i) => {
+            const angleTravelled = filled.reduce((sum, m, i) => {
                 if (i === 0) return 0;
-                return sum + Math.abs(m.angle - sweepArr[i - 1].angle);
+                return sum + Math.abs(m.angle - filled[i - 1].angle);
             }, 0);
             if (batchMs > 50 && angleTravelled > 3) {
                 const measured = (angleTravelled / batchMs) * 1000;
                 if (measured > 5 && measured < 200) {
-                    // Weighted average — trust new measurement partially
                     this.sweepSpeed = this.sweepSpeed * 0.4 + measured * 0.6;
                 }
             }
         }
 
-        // --- Use EXPLICIT dir from ESP32 (last measurement in batch) ---
-        // This is the direction the servo was moving when it was measured.
+        // --- Use EXPLICIT dir from ESP32 ---
         this.lastDir = (last.dir != null) ? last.dir : this.lastDir;
         this.lastAngle = last.angle;
         this.lastUpdateTs = wsNow;
-
-        // Snap display to last received position
         this.displayAngle = last.angle;
         this.sweepDir = this.lastDir;
 
-        // --- Update scan history with EMA smoothing ---
-        const BUCKET = 6;           // 6° per bucket (2× servo step)
-        const EMA_ALPHA = 0.65;     // How much to trust new reading (0-1)
-        const HIST_LIFETIME = 9000; // ms — how long to keep a detection
+        // --- Update scan history (including interpolated points) ---
+        const BUCKET = 4;           // 4° per bucket — finer than before (was 6°)
+        const EMA_ALPHA = 0.65;
+        const HIST_LIFETIME = 9000;
 
-        for (const m of sweepArr) {
+        for (const m of filled) {
             if (m.distance == null) continue;
-
-            // True age of this measurement
             const measTs = wsNow + (m.rel_ms || 0);
             const key = Math.round(m.angle / BUCKET) * BUCKET;
 
             const existing = this.scanHistory.get(key);
             if (existing) {
-                // EMA: blend new reading with history to smooth jitter
                 const smoothed = existing.distance * (1 - EMA_ALPHA) + m.distance * EMA_ALPHA;
-                this.scanHistory.set(key, {
-                    distance: smoothed,
-                    ts: measTs,
-                    rawDist: m.distance
-                });
+                this.scanHistory.set(key, { distance: smoothed, ts: measTs, rawDist: m.distance });
             } else {
-                this.scanHistory.set(key, {
-                    distance: m.distance,
-                    ts: measTs,
-                    rawDist: m.distance
-                });
+                this.scanHistory.set(key, { distance: m.distance, ts: measTs, rawDist: m.distance });
             }
         }
 
-        // Age out stale detections that weren't refreshed this sweep
-        // (only remove if the whole angle range has been swept over since detection)
+        // Age out stale detections
         const now = performance.now();
         for (const [key, entry] of this.scanHistory) {
-            if (now - entry.ts > HIST_LIFETIME) {
-                this.scanHistory.delete(key);
-            }
+            if (now - entry.ts > HIST_LIFETIME) this.scanHistory.delete(key);
         }
     }
 
