@@ -35,7 +35,7 @@ MIN_ANGLE  = 15
 MAX_ANGLE  = 165
 STEP       = 3       # degrees per move
 SETTLE_MS  = 22      # ms to wait after each servo move (was ~0, slight slow-down)
-MAX_BUFFER = 40      # keep at most 40 measurements in buffer
+MAX_BUFFER = 60      # keep at most 60 measurements in buffer
 
 # ---- Thread-shared rolling buffer ----
 # Written by radar thread, drained by main thread.
@@ -80,7 +80,9 @@ def get_distance():
     _trig.off()
 
     try:
-        duration = time_pulse_us(_echo, 1, 30000)   # 30ms max = ~5m
+        duration = time_pulse_us(_echo, 1, 11600)   # 11.6ms max ≈ 200cm range
+        # 30ms was overkill (5m range) and added latency when nothing in range.
+        # 200cm is the practical radar max for an indoor room.
         if duration < 0:
             return None
         dist = (duration * 0.0343) / 2

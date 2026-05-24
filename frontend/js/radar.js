@@ -154,12 +154,29 @@ class RadarDisplay {
             }
         }
 
-        // --- Use EXPLICIT dir from ESP32 ---
-        this.lastDir = (last.dir != null) ? last.dir : this.lastDir;
-        this.lastAngle = last.angle;
+        // --- Update extrapolation anchor ---
+        // Use EXPLICIT dir from ESP32. For the angle anchor: if the gap between
+        // current display position and the real last.angle is small, carry over
+        // the current display position so extrapolation continues without a jump.
+        // If the gap is large (>20°, e.g. ESP32 reversed direction while we were
+        // mid-extrapolation), snap to real angle to avoid permanent drift.
+        const realAngle = last.angle;
+        const realDir   = (last.dir != null) ? last.dir : this.lastDir;
+        const gapDeg    = Math.abs(this.displayAngle - realAngle);
+
+        if (gapDeg <= 20) {
+            // Small gap: continue extrapolation from current visual position
+            // using the real direction. Smooth — no jump.
+            this.lastAngle = this.displayAngle;
+            this.lastDir   = realDir;
+        } else {
+            // Large gap: snap anchor to real position to recover from drift.
+            this.lastAngle = realAngle;
+            this.lastDir   = realDir;
+        }
         this.lastUpdateTs = wsNow;
-        this.displayAngle = last.angle;
-        this.sweepDir = this.lastDir;
+        // NOTE: this.displayAngle is NOT touched here.
+        // _draw()'s ping-pong extrapolation is the exclusive writer of displayAngle.
 
         // --- Update scan history (including interpolated points) ---
         const BUCKET = 4;           // 4° per bucket — finer than before (was 6°)

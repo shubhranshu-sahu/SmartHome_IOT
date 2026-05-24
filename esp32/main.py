@@ -143,20 +143,27 @@ def _sensor_thread():
 
         # ---- Sensor POST (radar buffer + flame + gate) ----
         if time.ticks_diff(now, last_sensor) >= SENSOR_POST_INTERVAL_MS:
-            sweep_buf = radar.get_and_drain()   # All readings since last POST
+            # Drain buffer and snapshot sensor state BEFORE HTTP call.
+            # This ensures the 400ms interval is measured from the START of each
+            # POST, not after it completes. On Render's free tier HTTP takes 1-2s,
+            # so setting last_sensor AFTER the call made the real interval ~2300ms.
+            # Now it's always ~400ms from start-to-start (HTTP runs concurrently).
+            sweep_buf    = radar.get_and_drain()
+            flame_state  = sensors.read_flame()
+            gate_state   = sensors.read_gate()
+            led_states   = leds.get_states()
+            last_sensor  = time.ticks_ms()   # ← BEFORE the HTTP call
+
             payload = {
                 "sweep": sweep_buf,
-                "flame": sensors.read_flame(),
-                "gate":  sensors.read_gate(),
-                "leds":  leds.get_states()
+                "flame": flame_state,
+                "gate":  gate_state,
+                "leds":  led_states
             }
             try:
                 api.send_sensor_data(payload)
             except Exception as e:
                 print("[SENSOR] POST error:", e)
-            last_sensor = time.ticks_ms()
-            # Yield a bit after HTTP call
-            time.sleep_ms(50)
             continue
 
         # ---- Health ping (250s — keeps Render.com free tier awake) ----
