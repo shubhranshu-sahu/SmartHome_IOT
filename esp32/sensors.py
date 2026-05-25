@@ -2,14 +2,14 @@
 # sensors.py  —  Passive sensor reads
 #
 # Reads KY-026 flame sensor and FC-51 IR sensor.
-# Both are digital INPUT-ONLY pins (GPIO 34, 35).
+# Flame sensor: GPIO34 (input-only), IR sensor: GPIO21 (standard I/O)
 # Both sensors output LOW when triggered.
 # =============================================
 
 from machine import Pin
 from config  import FLAME_PIN, IR_PIN
 
-# GPIO 34 and 35 are input-only on ESP32 — Pin.IN only
+# GPIO 34 is input-only on ESP32 (flame). GPIO21 is standard — used for IR.
 _flame = Pin(FLAME_PIN, Pin.IN)
 _ir    = Pin(IR_PIN,    Pin.IN)
 

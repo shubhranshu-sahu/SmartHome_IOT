@@ -19,7 +19,7 @@ LED_PINS = [16, 17, 18, 19]   # Room 1-4
 
 # --- Radar ---
 SERVO_PIN = 25
-TRIG_PIN  = 5
+TRIG_PIN  = 32
 ECHO_PIN  = 27
 
 # --- Buzzer ---
@@ -27,7 +27,7 @@ BUZZER_PIN = 26
 
 # --- Optional sensors ---
 FLAME_PIN = 34
-IR_PIN    = 35
+IR_PIN    = 21
 
 # --- API Timing ---
 # Health ping: 250s  (only needed to keep Render.com free tier awake)

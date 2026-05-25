@@ -248,7 +248,7 @@ window.addEventListener('scroll', () => {
 // ============================================================
 window.addEventListener('load', function() {
 
-    // ---- Hero entrance ----
+    // ---- Hero entrance (no scroll trigger — fires immediately) ----
     const tl = gsap.timeline({ delay: 0.1 });
     tl.from('#hero-badge',    { opacity: 0, y: 24, duration: 0.55, ease: 'power3.out' })
       .from('#ht-1',          { opacity: 0, y: 50, duration: 0.6,  ease: 'power3.out' }, '-=0.25')
@@ -275,29 +275,61 @@ window.addEventListener('load', function() {
         }
     });
 
-    // ---- Feature cards ----
-    gsap.from('.feat-col', {
-        scrollTrigger: { trigger: '#features', start: 'top 75%' },
-        opacity: 0, y: 50, stagger: 0.12, duration: 0.6, ease: 'power3.out'
-    });
+    // ---- Robust scroll animation helper ----
+    // gsap.from() with scrollTrigger property sets opacity:0 IMMEDIATELY on load,
+    // before any scroll event. If the trigger never fires (CDN block, user already
+    // scrolled, bad viewport calc), elements stay permanently invisible.
+    // Fix: use explicit gsap.set() + ScrollTrigger.create() + IntersectionObserver
+    // fallback that reveals elements after a timeout if already in view.
+    function scrollReveal(selector, fromVars, trigger, stagger) {
+        const els = document.querySelectorAll(selector);
+        if (!els.length) return;
+        // Ensure elements start invisible
+        gsap.set(els, { ...fromVars, opacity: 0 });
 
-    // ---- Components ----
-    gsap.from('.comp-anim', {
-        scrollTrigger: { trigger: '#components', start: 'top 75%' },
-        opacity: 0, scale: 0.8, stagger: 0.07, duration: 0.5, ease: 'back.out(1.7)'
-    });
+        const toVars = Object.fromEntries(
+            Object.keys(fromVars).map(k => [k, k === 'scale' ? 1 : k === 'rotationY' ? 0 : 0])
+        );
 
-    // ---- Tech stack ----
-    gsap.from('.tech-anim', {
-        scrollTrigger: { trigger: '#tech', start: 'top 75%' },
-        opacity: 0, y: 30, rotationY: 25, stagger: 0.08, duration: 0.55, ease: 'power3.out'
-    });
+        const reveal = () => gsap.to(els, {
+            ...toVars, opacity: 1, stagger: stagger || 0.1, duration: 0.55, ease: 'power3.out'
+        });
 
-    // ---- CTA ----
-    gsap.from(['#cta-title', '#cta-sub', '#btn-cta'], {
-        scrollTrigger: { trigger: '#cta', start: 'top 80%' },
-        opacity: 0, y: 30, stagger: 0.15, duration: 0.6, ease: 'power3.out'
-    });
+        ScrollTrigger.create({
+            trigger: trigger,
+            start:   'top 80%',
+            once:    true,
+            onEnter: reveal
+        });
+
+        // Fallback: if elements are already in viewport when page loads (or CDN
+        // didn't load GSAP's ScrollTrigger), reveal them after 700ms.
+        setTimeout(() => {
+            const rect = els[0].getBoundingClientRect();
+            if (rect.top < window.innerHeight * 1.05) reveal();
+        }, 700);
+    }
+
+    // Feature cards
+    scrollReveal('.feat-col', { y: 50 }, '#features', 0.12);
+
+    // Component 3D flip cards
+    scrollReveal('.comp-anim', { scale: 0.85, y: 20 }, '#components', 0.07);
+
+    // Tech stack
+    scrollReveal('.tech-anim', { y: 30, rotationY: 20 }, '#tech', 0.08);
+
+    // CTA
+    scrollReveal('#cta-title, #cta-sub, #btn-cta', { y: 30 }, '#cta', 0.15);
+
+    // ---- Mobile: click to flip component cards ----
+    // On touch devices hover doesn't persist — clicking toggles the flip class.
+    const isTouchDevice = window.matchMedia('(hover: none)').matches;
+    if (isTouchDevice) {
+        document.querySelectorAll('.c3d-wrap').forEach(wrap => {
+            wrap.addEventListener('click', () => wrap.classList.toggle('flipped'));
+        });
+    }
 });
 
 // ============================================================
@@ -384,6 +416,32 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('login-error')?.classList.add('d-none');
             document.getElementById('login-username').value = '';
             document.getElementById('login-password').value = '';
+        });
+    }
+});
+
+// ============================================================
+// 7. 3D VIEWER MODAL
+// ============================================================
+function open3DModal(src, title, event) {
+    if (event) {
+        event.stopPropagation(); // Prevent the card from flipping
+    }
+    
+    document.getElementById('m3d-title').textContent = title;
+    const viewer = document.getElementById('m3d-viewer');
+    viewer.src = src;
+    
+    const modal = new bootstrap.Modal(document.getElementById('model-3d-modal'));
+    modal.show();
+}
+
+// Reset viewer source on hide to free memory
+document.addEventListener('DOMContentLoaded', () => {
+    const m3dModal = document.getElementById('model-3d-modal');
+    if (m3dModal) {
+        m3dModal.addEventListener('hidden.bs.modal', () => {
+            document.getElementById('m3d-viewer').src = "";
         });
     }
 });
