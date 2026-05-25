@@ -1,7 +1,7 @@
 // ============================================
 // auth.js — Shared authentication utility
 //
-// Loaded by home.html, index.html, stats.html.
+// Loaded by index.html, dashboard.html, stats.html.
 // Provides: getAuthToken, setAuthToken, clearAuthToken,
 //           verifyAuthToken, requireAuth, logoutAndRedirect
 // ============================================
@@ -30,14 +30,14 @@ async function verifyAuthToken() {
 }
 
 /**
- * Call at the top of protected pages (index.html, stats.html).
- * Redirects to home.html if token missing or invalid.
+ * Call at the top of protected pages (dashboard.html, stats.html).
+ * Redirects to index.html if token missing or invalid.
  */
 async function requireAuth() {
     const valid = await verifyAuthToken();
     if (!valid) {
         clearAuthToken();
-        window.location.replace('home.html');
+        window.location.replace('index.html');
         // Throw so the rest of the page JS doesn't execute during redirect
         throw new Error('AUTH_REDIRECT');
     }
@@ -57,5 +57,5 @@ async function logoutAndRedirect() {
         } catch (e) { /* silent — session expires anyway on restart */ }
     }
     clearAuthToken();
-    window.location.replace('home.html');
+    window.location.replace('index.html');
 }

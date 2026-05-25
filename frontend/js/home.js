@@ -28,7 +28,7 @@ gsap.registerPlugin(ScrollTrigger);
             el.removeAttribute('data-bs-toggle');
             el.removeAttribute('data-bs-target');
             el.innerHTML = '<i class="bi bi-grid-fill me-2"></i>Go to Dashboard';
-            el.onclick = () => window.location.href = 'index.html';
+            el.onclick = () => window.location.href = 'dashboard.html';
         });
     }
 })();
@@ -381,7 +381,7 @@ async function doLogin() {
             const data = await resp.json();
             setAuthToken(data.token);
             // Redirect to dashboard
-            window.location.href = 'index.html';
+            window.location.href = 'dashboard.html';
         } else {
             const data = await resp.json().catch(() => ({}));
             const msg = resp.status === 401 ? 'Invalid username or password.'
