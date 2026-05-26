@@ -154,6 +154,33 @@
   </section>
 
   <!-- =====================================================================
+     REAL HARDWARE SHOWCASE
+     ===================================================================== -->
+  <section id="hardware-photo" class="hw-photo-section">
+    <div class="hw-photo-inner">
+      <img src="assets/images/readme_snapshot_2.png"
+        alt="Real SmartHome IoT hardware build — ESP32 breadboard with HC-SR04, servo, LEDs, buzzer and IR sensors"
+        class="hw-photo-img" loading="lazy" />
+      <div class="hw-photo-overlay">
+        <div class="hw-overlay-content">
+          <span class="hw-pill"><i class="bi bi-camera-fill me-2"></i>Real Build</span>
+          <h2 class="hw-overlay-title">From Code to Circuits</h2>
+          <p class="hw-overlay-sub">
+            Every wire, resistor, and sensor physically wired and running MicroPython —
+            streaming live data to your browser right now.
+          </p>
+          <div class="hw-badge-row">
+            <span class="hw-badge"><i class="bi bi-cpu-fill"></i> ESP32 DevKit</span>
+            <span class="hw-badge"><i class="bi bi-broadcast"></i> HC-SR04 Radar</span>
+            <span class="hw-badge"><i class="bi bi-lightbulb-fill"></i> 4× LEDs</span>
+            <span class="hw-badge"><i class="bi bi-fire"></i> IR Sensors</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
      FEATURES
      ===================================================================== -->
   <section id="features" class="home-section">
@@ -237,13 +264,19 @@
         <div class="c3d-wrap comp-anim" style="--ccolor:#00ff88; --ccolor-rgb: 0, 255, 136;">
           <div class="c3d-card">
             <div class="c3d-front">
-              <button class="btn-inspect-3d" onclick="open3DModal('assets/01 esp32_wroom_32_-_low_poly_photorealistic.glb', 'ESP32 DevKit Wroom-32', event)" title="Inspect 3D">
+              <button class="btn-inspect-3d"
+                onclick="open3DModal('assets/01 esp32_wroom_32_-_low_poly_photorealistic.glb', 'ESP32 DevKit Wroom-32', event)"
+                title="Inspect 3D">
                 <i class="bi bi-arrows-fullscreen"></i>
               </button>
-              <model-viewer camera-controls src="assets/01 esp32_wroom_32_-_low_poly_photorealistic.glb" alt="ESP32 DevKit Wroom-32" auto-rotate shadow-intensity="1" interaction-prompt="none" loading="lazy"></model-viewer>
+              <model-viewer camera-controls src="assets/01 esp32_wroom_32_-_low_poly_photorealistic.glb"
+                alt="ESP32 DevKit Wroom-32" auto-rotate shadow-intensity="1" interaction-prompt="none"
+                loading="lazy"></model-viewer>
               <div class="c3d-name">ESP32 DevKit</div>
               <div class="c3d-tag">Dual-core MCU · WiFi</div>
-              <button class="btn-flip-card front-flip" onclick="this.closest('.c3d-wrap').classList.add('flipped'); event.stopPropagation();">View Specs</button>
+              <button class="btn-flip-card front-flip"
+                onclick="this.closest('.c3d-wrap').classList.add('flipped'); event.stopPropagation();">View
+                Specs</button>
             </div>
             <div class="c3d-back">
               <div class="c3d-bname">ESP32 DevKit</div>
@@ -254,7 +287,9 @@
                 <li>CP2102 USB-to-UART</li>
                 <li>30 GPIO pins, 3.3V</li>
               </ul>
-              <button class="btn-flip-card back-flip" onclick="this.closest('.c3d-wrap').classList.remove('flipped'); event.stopPropagation();">Back to Model</button>
+              <button class="btn-flip-card back-flip"
+                onclick="this.closest('.c3d-wrap').classList.remove('flipped'); event.stopPropagation();">Back to
+                Model</button>
             </div>
           </div>
         </div>
@@ -264,13 +299,17 @@
         <div class="c3d-wrap comp-anim" style="--ccolor:#54a0ff; --ccolor-rgb: 84, 160, 255;">
           <div class="c3d-card">
             <div class="c3d-front">
-              <button class="btn-inspect-3d" onclick="open3DModal('assets/new_hc-sr04.glb', 'HC-SR04 Ultrasonic Sensor', event)" title="Inspect 3D">
+              <button class="btn-inspect-3d"
+                onclick="open3DModal('assets/new_hc-sr04.glb', 'HC-SR04 Ultrasonic Sensor', event)" title="Inspect 3D">
                 <i class="bi bi-arrows-fullscreen"></i>
               </button>
-              <model-viewer camera-controls src="assets/new_hc-sr04.glb" alt="HC-SR04 Ultrasonic Sensor" auto-rotate shadow-intensity="1" interaction-prompt="none" loading="lazy"></model-viewer>
+              <model-viewer camera-controls src="assets/new_hc-sr04.glb" alt="HC-SR04 Ultrasonic Sensor" auto-rotate
+                shadow-intensity="1" interaction-prompt="none" loading="lazy"></model-viewer>
               <div class="c3d-name">HC-SR04</div>
               <div class="c3d-tag">Ultrasonic · 2cm–2m</div>
-              <button class="btn-flip-card front-flip" onclick="this.closest('.c3d-wrap').classList.add('flipped'); event.stopPropagation();">View Specs</button>
+              <button class="btn-flip-card front-flip"
+                onclick="this.closest('.c3d-wrap').classList.add('flipped'); event.stopPropagation();">View
+                Specs</button>
             </div>
             <div class="c3d-back">
               <div class="c3d-bname">HC-SR04</div>
@@ -281,7 +320,9 @@
                 <li>Trig GPIO32 · Echo GPIO27</li>
                 <li>5V supply, 15mA</li>
               </ul>
-              <button class="btn-flip-card back-flip" onclick="this.closest('.c3d-wrap').classList.remove('flipped'); event.stopPropagation();">Back to Model</button>
+              <button class="btn-flip-card back-flip"
+                onclick="this.closest('.c3d-wrap').classList.remove('flipped'); event.stopPropagation();">Back to
+                Model</button>
             </div>
           </div>
         </div>
@@ -290,13 +331,17 @@
         <div class="c3d-wrap comp-anim" style="--ccolor:#ffa502; --ccolor-rgb: 255, 165, 2;">
           <div class="c3d-card">
             <div class="c3d-front">
-              <button class="btn-inspect-3d" onclick="open3DModal('assets/servomotor_sg90.glb', 'SG90 Servo Motor', event)" title="Inspect 3D">
+              <button class="btn-inspect-3d"
+                onclick="open3DModal('assets/servomotor_sg90.glb', 'SG90 Servo Motor', event)" title="Inspect 3D">
                 <i class="bi bi-arrows-fullscreen"></i>
               </button>
-              <model-viewer camera-controls src="assets/servomotor_sg90.glb" alt="SG90 Servo Motor" auto-rotate shadow-intensity="1" interaction-prompt="none" loading="lazy"></model-viewer>
+              <model-viewer camera-controls src="assets/servomotor_sg90.glb" alt="SG90 Servo Motor" auto-rotate
+                shadow-intensity="1" interaction-prompt="none" loading="lazy"></model-viewer>
               <div class="c3d-name">SG90 Servo</div>
               <div class="c3d-tag">180° sweep mechanism</div>
-              <button class="btn-flip-card front-flip" onclick="this.closest('.c3d-wrap').classList.add('flipped'); event.stopPropagation();">View Specs</button>
+              <button class="btn-flip-card front-flip"
+                onclick="this.closest('.c3d-wrap').classList.add('flipped'); event.stopPropagation();">View
+                Specs</button>
             </div>
             <div class="c3d-back">
               <div class="c3d-bname">SG90 Servo</div>
@@ -307,7 +352,9 @@
                 <li>50Hz PWM · Signal GPIO25</li>
                 <li>5V supply, 100-250mA</li>
               </ul>
-              <button class="btn-flip-card back-flip" onclick="this.closest('.c3d-wrap').classList.remove('flipped'); event.stopPropagation();">Back to Model</button>
+              <button class="btn-flip-card back-flip"
+                onclick="this.closest('.c3d-wrap').classList.remove('flipped'); event.stopPropagation();">Back to
+                Model</button>
             </div>
           </div>
         </div>
@@ -316,13 +363,18 @@
         <div class="c3d-wrap comp-anim" style="--ccolor:#ff4757; --ccolor-rgb: 255, 71, 87;">
           <div class="c3d-card">
             <div class="c3d-front">
-              <button class="btn-inspect-3d" onclick="open3DModal('assets/IR_sensor/source/ir sensor.glb', 'IR Obstacle Sensor', event)" title="Inspect 3D">
+              <button class="btn-inspect-3d"
+                onclick="open3DModal('assets/IR_sensor/source/ir sensor.glb', 'IR Obstacle Sensor', event)"
+                title="Inspect 3D">
                 <i class="bi bi-arrows-fullscreen"></i>
               </button>
-              <model-viewer camera-controls src="assets/IR_sensor/source/ir sensor.glb" alt="IR Sensor Module" auto-rotate shadow-intensity="1" interaction-prompt="none" loading="lazy"></model-viewer>
+              <model-viewer camera-controls src="assets/IR_sensor/source/ir sensor.glb" alt="IR Sensor Module"
+                auto-rotate shadow-intensity="1" interaction-prompt="none" loading="lazy"></model-viewer>
               <div class="c3d-name">IR Sensor</div>
               <div class="c3d-tag">Infrared obstacle detection</div>
-              <button class="btn-flip-card front-flip" onclick="this.closest('.c3d-wrap').classList.add('flipped'); event.stopPropagation();">View Specs</button>
+              <button class="btn-flip-card front-flip"
+                onclick="this.closest('.c3d-wrap').classList.add('flipped'); event.stopPropagation();">View
+                Specs</button>
             </div>
             <div class="c3d-back">
               <div class="c3d-bname">IR Sensor</div>
@@ -333,7 +385,9 @@
                 <li>Adjustable threshold via pot</li>
                 <li>3.3–5V supply</li>
               </ul>
-              <button class="btn-flip-card back-flip" onclick="this.closest('.c3d-wrap').classList.remove('flipped'); event.stopPropagation();">Back to Model</button>
+              <button class="btn-flip-card back-flip"
+                onclick="this.closest('.c3d-wrap').classList.remove('flipped'); event.stopPropagation();">Back to
+                Model</button>
             </div>
           </div>
         </div>
@@ -345,7 +399,9 @@
               <div class="c3d-emoji">💡</div>
               <div class="c3d-name">4× LEDs</div>
               <div class="c3d-tag">Room lights · GPIO driven</div>
-              <button class="btn-flip-card front-flip" onclick="this.closest('.c3d-wrap').classList.add('flipped'); event.stopPropagation();">View Specs</button>
+              <button class="btn-flip-card front-flip"
+                onclick="this.closest('.c3d-wrap').classList.add('flipped'); event.stopPropagation();">View
+                Specs</button>
             </div>
             <div class="c3d-back">
               <div class="c3d-bname">4× LEDs</div>
@@ -356,7 +412,9 @@
                 <li>3.3V GPIO direct drive</li>
                 <li>65µW per LED (measured)</li>
               </ul>
-              <button class="btn-flip-card back-flip" onclick="this.closest('.c3d-wrap').classList.remove('flipped'); event.stopPropagation();">Back to Model</button>
+              <button class="btn-flip-card back-flip"
+                onclick="this.closest('.c3d-wrap').classList.remove('flipped'); event.stopPropagation();">Back to
+                Model</button>
             </div>
           </div>
         </div>
@@ -365,13 +423,17 @@
         <div class="c3d-wrap comp-anim" style="--ccolor:#00d2d3; --ccolor-rgb: 0, 210, 211;">
           <div class="c3d-card">
             <div class="c3d-front">
-              <button class="btn-inspect-3d" onclick="open3DModal('assets/buzzer.glb', 'Active Buzzer', event)" title="Inspect 3D">
+              <button class="btn-inspect-3d" onclick="open3DModal('assets/buzzer.glb', 'Active Buzzer', event)"
+                title="Inspect 3D">
                 <i class="bi bi-arrows-fullscreen"></i>
               </button>
-              <model-viewer camera-controls src="assets/buzzer.glb" alt="Active Buzzer" auto-rotate shadow-intensity="1" interaction-prompt="none" loading="lazy"></model-viewer>
+              <model-viewer camera-controls src="assets/buzzer.glb" alt="Active Buzzer" auto-rotate shadow-intensity="1"
+                interaction-prompt="none" loading="lazy"></model-viewer>
               <div class="c3d-name">Active Buzzer</div>
               <div class="c3d-tag">Alarm · protect mode</div>
-              <button class="btn-flip-card front-flip" onclick="this.closest('.c3d-wrap').classList.add('flipped'); event.stopPropagation();">View Specs</button>
+              <button class="btn-flip-card front-flip"
+                onclick="this.closest('.c3d-wrap').classList.add('flipped'); event.stopPropagation();">View
+                Specs</button>
             </div>
             <div class="c3d-back">
               <div class="c3d-bname">Active Buzzer</div>
@@ -382,7 +444,9 @@
                 <li>GPIO26 via NPN transistor</li>
                 <li>Variable beep rate mode</li>
               </ul>
-              <button class="btn-flip-card back-flip" onclick="this.closest('.c3d-wrap').classList.remove('flipped'); event.stopPropagation();">Back to Model</button>
+              <button class="btn-flip-card back-flip"
+                onclick="this.closest('.c3d-wrap').classList.remove('flipped'); event.stopPropagation();">Back to
+                Model</button>
             </div>
           </div>
         </div>
@@ -391,13 +455,17 @@
         <div class="c3d-wrap comp-anim" style="--ccolor:#a78bfa; --ccolor-rgb: 167, 139, 250;">
           <div class="c3d-card">
             <div class="c3d-front">
-              <button class="btn-inspect-3d" onclick="open3DModal('assets/breadboard.glb', 'Wiring Hub Breadboard', event)" title="Inspect 3D">
+              <button class="btn-inspect-3d"
+                onclick="open3DModal('assets/breadboard.glb', 'Wiring Hub Breadboard', event)" title="Inspect 3D">
                 <i class="bi bi-arrows-fullscreen"></i>
               </button>
-              <model-viewer camera-controls src="assets/breadboard.glb" alt="Wiring Hub Breadboard" auto-rotate shadow-intensity="1" interaction-prompt="none" loading="lazy"></model-viewer>
+              <model-viewer camera-controls src="assets/breadboard.glb" alt="Wiring Hub Breadboard" auto-rotate
+                shadow-intensity="1" interaction-prompt="none" loading="lazy"></model-viewer>
               <div class="c3d-name">Breadboard</div>
               <div class="c3d-tag">Circuit wiring hub</div>
-              <button class="btn-flip-card front-flip" onclick="this.closest('.c3d-wrap').classList.add('flipped'); event.stopPropagation();">View Specs</button>
+              <button class="btn-flip-card front-flip"
+                onclick="this.closest('.c3d-wrap').classList.add('flipped'); event.stopPropagation();">View
+                Specs</button>
             </div>
             <div class="c3d-back">
               <div class="c3d-bname">Breadboard</div>
@@ -408,7 +476,9 @@
                 <li>Solderless prototyping</li>
                 <li>ABS plastic body</li>
               </ul>
-              <button class="btn-flip-card back-flip" onclick="this.closest('.c3d-wrap').classList.remove('flipped'); event.stopPropagation();">Back to Model</button>
+              <button class="btn-flip-card back-flip"
+                onclick="this.closest('.c3d-wrap').classList.remove('flipped'); event.stopPropagation();">Back to
+                Model</button>
             </div>
           </div>
         </div>
@@ -417,13 +487,19 @@
         <div class="c3d-wrap comp-anim" style="--ccolor:#8395a7; --ccolor-rgb: 131, 149, 167;">
           <div class="c3d-card">
             <div class="c3d-front">
-              <button class="btn-inspect-3d" onclick="open3DModal('assets/rechargeable_lithium_ion_battery_-_18650.glb', '18650 Lithium Ion Battery', event)" title="Inspect 3D">
+              <button class="btn-inspect-3d"
+                onclick="open3DModal('assets/rechargeable_lithium_ion_battery_-_18650.glb', '18650 Lithium Ion Battery', event)"
+                title="Inspect 3D">
                 <i class="bi bi-arrows-fullscreen"></i>
               </button>
-              <model-viewer camera-controls src="assets/rechargeable_lithium_ion_battery_-_18650.glb" alt="18650 Battery" auto-rotate shadow-intensity="1" interaction-prompt="none" loading="lazy"></model-viewer>
+              <model-viewer camera-controls src="assets/rechargeable_lithium_ion_battery_-_18650.glb"
+                alt="18650 Battery" auto-rotate shadow-intensity="1" interaction-prompt="none"
+                loading="lazy"></model-viewer>
               <div class="c3d-name">Power Supply</div>
               <div class="c3d-tag">5V regulated boost</div>
-              <button class="btn-flip-card front-flip" onclick="this.closest('.c3d-wrap').classList.add('flipped'); event.stopPropagation();">View Specs</button>
+              <button class="btn-flip-card front-flip"
+                onclick="this.closest('.c3d-wrap').classList.add('flipped'); event.stopPropagation();">View
+                Specs</button>
             </div>
             <div class="c3d-back">
               <div class="c3d-bname">Power Supply</div>
@@ -434,7 +510,9 @@
                 <li>Boost converter board</li>
                 <li>≥1A current rating</li>
               </ul>
-              <button class="btn-flip-card back-flip" onclick="this.closest('.c3d-wrap').classList.remove('flipped'); event.stopPropagation();">Back to Model</button>
+              <button class="btn-flip-card back-flip"
+                onclick="this.closest('.c3d-wrap').classList.remove('flipped'); event.stopPropagation();">Back to
+                Model</button>
             </div>
           </div>
         </div>
@@ -582,7 +660,8 @@
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body p-0" style="height: 70vh;">
-          <model-viewer id="m3d-viewer" src="" alt="3D Model" auto-rotate camera-controls shadow-intensity="1" style="width: 100%; height: 100%; background: transparent; outline: none;"></model-viewer>
+          <model-viewer id="m3d-viewer" src="" alt="3D Model" auto-rotate camera-controls shadow-intensity="1"
+            style="width: 100%; height: 100%; background: transparent; outline: none;"></model-viewer>
         </div>
         <div class="modal-footer border-top-0 pt-0 justify-content-center">
           <p class="text-muted small mb-0">Use mouse/touch to rotate and zoom.</p>
