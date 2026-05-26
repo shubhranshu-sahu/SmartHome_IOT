@@ -703,21 +703,79 @@ On the radar display: `None` = no blip. `float` = draw a blip at (angle, distanc
 
 ---
 
-## 10. Remaining Phases
+## 10. Phase 4 — Frontend Dashboard & Real-Time WebSockets ✅
 
-| Phase | Status | Goal | Key Files |
-|-------|--------|------|-----------|
-| **Phase 1** | ✅ Done | WiFi provisioning, captive portal, D2 LED | `wifi.py`, `wifi_manager.py`, `hardware.py` |
-| **Phase 2** | ✅ Done | ESP32 ↔ FastAPI pipeline, sensor data flowing | `api.py`, `backend/` |
-| **Phase 3** | ✅ Done | Radar — servo sweep + HC-SR04 in `_thread`, angles + distances live | `radar.py`, `main.py` |
-| **Phase 4** | ✅ Next | Local Dashboard — HTML/JS connects to FastAPI, shows radar canvas, LED buttons, sensor status | `frontend/` |
-| **Phase 5** | ⬜ | Backend WebSocket — push radar data to browser in real-time | `backend/app/routes/ws.py` |
-| **Phase 6** | ⬜ | Backend alerts — flame=True auto-queues buzzer beep | `backend/app/routes/sensor.py` update |
-| **Phase 7** | ⬜ | MongoDB persistence — sensor history logging | `backend/app/database/` |
-| **Phase 8** | ⬜ | Analytics — room on-time, power estimate | Backend + dashboard |
-| **Phase 9** | ⬜ | Deploy — FastAPI on Render, frontend on Vercel | `render.yaml`, Vercel config |
-| **Phase 10** | ⬜ | Final integration + demo polish | — |
+### Goal
+Build a modern, dark-themed responsive dashboard using Vanilla JS and Bootstrap 5. Connect to the FastAPI backend via WebSockets to render the live radar and sensor states.
+
+### What Was Built
+- `dashboard.html` (formerly `index.html`), `radar.js`, `leds.js`, `sensors.js`, `main.js`.
+- **WebSocket Route (`ws.py`)**: Pushes 60fps radar sweep data and sensor states instantly.
+- **Radar Extrapolation**: Used ping-pong mathematical extrapolation on the frontend to render the servo position smoothly at 60fps between 400ms HTTP updates.
+
+### Problems Faced & Solutions
+**Problem:** The radar dots felt scattered and disappeared instantly. Furthermore, the sweep line froze at the edges (0° and 180°) if network latency occurred.
+**Solution:** Implemented `scanHistory` (a persistence map with EMA smoothing) and ping-pong extrapolation to simulate the physical servo bounce accurately between WS updates.
 
 ---
 
-*Document maintained alongside code. Update after each phase.*
+## 11. Phase 5 — MongoDB Analytics & Automation ✅
+
+### Goal
+Log sensor events to MongoDB Atlas (via motor async driver) and provide analytics.
+
+### What Was Built
+- **Database (`database/db.py`)**: MongoDB integration tracking `led_sessions`, `flame_events`, and `gate_events`.
+- **Stats Page (`stats.html`)**: Shows LED usage time, battery mAh drain estimates, and timelines for gate/flame events.
+- **Backend Alerts**: When Flame is detected, the FastAPI backend automatically pushes a `beep` command to the ESP32 command queue, triggering the active buzzer.
+
+---
+
+## 12. Phase 6 — Deployment & Authentication ✅
+
+### Goal
+Deploy the frontend to Vercel and the backend to Render. Secure the dashboard.
+
+### What Was Built
+- **Backend on Render**: Deployed the FastAPI server. Handles cross-origin WebSocket and POST traffic.
+- **Frontend on Vercel**: Hosted the static HTML/JS/CSS assets.
+- **Authentication**: Added a login gate against MongoDB credentials (`auth.js`).
+
+### Problems Faced & Solutions
+**Problem:** Free tier Render backend latency caused command delays.
+**Solution:** Accepted the latency as an infrastructure constraint, but optimized the ESP32 polling loops to not block each other (`_cmd_thread`).
+
+---
+
+## 13. Phase 7 — 3D Landing Page Polish ✅
+
+### Goal
+Create a striking first impression with a 3D component showcase.
+
+### What Was Built
+- `index.html` (Landing page) with Google's `<model-viewer>`.
+- Integrated customized `.glb` 3D models for all physical components (ESP32 DevKit, IR Sensor, Breadboard, Servo, Battery, HC-SR04, Buzzer).
+- Allowed fully interactive drag-and-zoom inspection natively on the flip-cards.
+
+### Problems Faced & Solutions
+**Problem:** A "Backend Offline" modal flashed immediately upon visiting the root URL `svvv-iot.vercel.app/` before redirecting.
+**Solution:** Vercel automatically served `index.html` (which was the Dashboard). The dashboard initiated a WebSocket connection, failed, showed the offline popup, and *then* the auth script kicked in and redirected to the login page.
+**Fix:** Renamed `home.html` to `index.html` (Landing Page) and `index.html` to `dashboard.html` (Dashboard). Updated all JS redirect paths accordingly.
+
+---
+
+## 14. Final Project Status
+
+| Phase | Status | Goal | Key Files |
+|-------|--------|------|-----------|
+| **Phase 1** | ✅ Done | WiFi provisioning, captive portal, D2 LED | `wifi.py`, `wifi_manager.py` |
+| **Phase 2** | ✅ Done | ESP32 ↔ FastAPI pipeline | `api.py`, `backend/` |
+| **Phase 3** | ✅ Done | Radar sweep in `_thread` | `radar.py`, `main.py` |
+| **Phase 4** | ✅ Done | Local Dashboard & WebSockets | `frontend/`, `ws.py` |
+| **Phase 5** | ✅ Done | MongoDB logging & Auto-alerts | `database/db.py`, `stats.html` |
+| **Phase 6** | ✅ Done | Deploy Render + Vercel, Auth | `auth.js`, `render.yaml` |
+| **Phase 7** | ✅ Done | 3D Landing Page & UI Polish | `index.html`, `assets/` |
+
+---
+
+*Document maintained alongside code.*
